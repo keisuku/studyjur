@@ -230,6 +230,67 @@
       font-weight: 900;
       color: #dc2626;
     }
+    /* Taiko no Tatsujin Rainbow Soul Gauge & Combo Overdrive */
+    @keyframes rainbowFlow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+    .taiko-rainbow-seg {
+      background: linear-gradient(90deg, #ff2e97, #ff8a00, #ffe600, #22c55e, #00f5ff, #8b5cf6, #ff2e97);
+      background-size: 200% 100%;
+      animation: rainbowFlow 1.2s linear infinite;
+      box-shadow: 0 0 8px rgba(255, 190, 0, 0.75);
+    }
+    @keyframes soulPulse {
+      0%, 100% { transform: scale(1) rotate(-3deg); box-shadow: 0 0 10px rgba(255, 180, 0, 0.7); }
+      50% { transform: scale(1.14) rotate(3deg); box-shadow: 0 0 22px rgba(255, 46, 151, 0.95); }
+    }
+    .soul-orb-max {
+      animation: soulPulse 0.65s ease-in-out infinite;
+    }
+    @keyframes comboPop {
+      0% { transform: scale(0.65); }
+      55% { transform: scale(1.28); }
+      100% { transform: scale(1); }
+    }
+    .combo-pop {
+      animation: comboPop 0.24s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    /* Punchy pon-pon streak stamp */
+    @keyframes stampBang {
+      0% { transform: translate(-50%, -50%) scale(0.3) rotate(-10deg); opacity: 0; }
+      30% { transform: translate(-50%, -50%) scale(1.24) rotate(3deg); opacity: 1; }
+      55% { transform: translate(-50%, -50%) scale(0.96) rotate(-1deg); opacity: 1; }
+      82% { transform: translate(-50%, -50%) scale(1.03) rotate(0deg); opacity: 1; }
+      100% { transform: translate(-50%, -62%) scale(0.92); opacity: 0; }
+    }
+    .streak-stamp {
+      position: absolute;
+      left: 50%;
+      top: 46%;
+      z-index: 35;
+      pointer-events: none;
+      animation: stampBang 0.92s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    /* Multi-select toggle chip active state */
+    .chip-on-sub {
+      background: #0ea5e9 !important;
+      color: #ffffff !important;
+      border-color: #0284c7 !important;
+      box-shadow: 0 3px 0 #0369a1 !important;
+    }
+    .chip-on-add {
+      background: #ec4899 !important;
+      color: #ffffff !important;
+      border-color: #db2777 !important;
+      box-shadow: 0 3px 0 #be185d !important;
+    }
+    .chip-on-cnt {
+      background: #f59e0b !important;
+      color: #ffffff !important;
+      border-color: #d97706 !important;
+      box-shadow: 0 3px 0 #b45309 !important;
+    }
   </style>
 </head>
 <body class="h-[100dvh] w-screen overflow-hidden flex flex-col">
@@ -299,65 +360,61 @@
         </div>
       </div>
 
-      <!-- Focused Hissan Drills -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 shrink-0">
-        <!-- Subtraction Hissan Card -->
-        <div class="bg-white rounded-2xl p-3 border-2 border-sky-200 shadow-sm flex flex-col justify-between gap-2">
-          <div class="flex items-center gap-2">
-            <span class="w-8 h-8 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center text-base font-black">➖</span>
-            <div>
-              <h2 class="text-sm font-black text-slate-800">見える筆算：ひき算（くり下がりバトル）</h2>
-              <p class="text-[11px] font-bold text-slate-500">ピンチの位を左のヒーローが+10パワーで救出！</p>
-            </div>
+      <!-- Multi-Select Custom Drill Builder (複数選択＋問題数 5/10/15問) -->
+      <div class="bg-white rounded-2xl p-2.5 sm:p-3 border-2 border-sky-200 shadow-sm space-y-2 shrink-0">
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <div class="flex items-center gap-1.5">
+            <span class="text-base">🎯</span>
+            <h2 class="text-xs sm:text-sm font-black text-slate-800">もんだいカスタム（すきな組み合わせを複数えらべるよ！）</h2>
           </div>
-          <div class="grid grid-cols-2 gap-1.5">
-            <button class="drill-launch btn-3d btn-white py-2 px-2 rounded-xl text-left" data-drill="sub_2d">
-              <div class="text-xs font-black text-sky-700">Lv.1 2けた</div>
-              <div class="text-[10px] font-bold text-slate-500">例: 56 − 39</div>
-            </button>
-            <button class="drill-launch btn-3d btn-white py-2 px-2 rounded-xl text-left" data-drill="sub_3d">
-              <div class="text-xs font-black text-sky-700">Lv.2 3けた連続</div>
-              <div class="text-[10px] font-bold text-slate-500">例: 324 − 156</div>
-            </button>
-            <button class="drill-launch btn-3d btn-blue py-2 px-2 rounded-xl text-left" data-drill="sub_4d_thousand">
-              <div class="text-xs font-black text-white">★ Lv.3 千から助ける</div>
-              <div class="text-[10px] font-bold text-sky-100">例: 5162 − 1852</div>
-            </button>
-            <button class="drill-launch btn-3d btn-white py-2 px-2 rounded-xl text-left" data-drill="sub_4d_zero">
-              <div class="text-xs font-black text-purple-700">Lv.4 0をまたぐ</div>
-              <div class="text-[10px] font-bold text-slate-500">例: 5000 − 1234</div>
-            </button>
+          <!-- Question Count Selector: 5 / 10 / 15 -->
+          <div class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-200">
+            <span class="text-[10px] font-black text-slate-500 px-1.5">問題数</span>
+            <button class="qcount-btn btn-3d btn-white px-2.5 py-0.5 rounded-lg text-xs font-black chip-on-cnt" data-cnt="5">5問</button>
+            <button class="qcount-btn btn-3d btn-white px-2.5 py-0.5 rounded-lg text-xs font-black" data-cnt="10">10問</button>
+            <button class="qcount-btn btn-3d btn-white px-2.5 py-0.5 rounded-lg text-xs font-black" data-cnt="15">15問</button>
           </div>
         </div>
 
-        <!-- Addition Hissan Card -->
-        <div class="bg-white rounded-2xl p-3 border-2 border-pink-200 shadow-sm flex flex-col justify-between gap-2">
-          <div class="flex items-center gap-2">
-            <span class="w-8 h-8 rounded-xl bg-pink-100 text-pink-600 flex items-center justify-center text-base font-black">➕</span>
-            <div>
-              <h2 class="text-sm font-black text-slate-800">見える筆算：たし算（くり上がり合体）</h2>
-              <p class="text-[11px] font-bold text-slate-500">5・5メモリが満タン(10)になったら左へ進化！</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <!-- Subtraction Multi-Select -->
+          <div class="bg-sky-50/60 rounded-xl p-2 border border-sky-200 space-y-1.5">
+            <div class="text-[11px] font-black text-sky-800 flex items-center justify-between">
+              <span>➖ ひき算（タップでON/OFF）</span>
+              <span class="text-[10px] text-sky-600">混ぜて出題OK</span>
+            </div>
+            <div class="grid grid-cols-3 gap-1">
+              <button class="pool-chip btn-3d btn-white py-1.5 px-1 rounded-lg text-[11px] font-black chip-on-sub" data-pool="sub_2d" data-kind="sub">2けた</button>
+              <button class="pool-chip btn-3d btn-white py-1.5 px-1 rounded-lg text-[11px] font-black" data-pool="sub_3d" data-kind="sub">3けた</button>
+              <button class="pool-chip btn-3d btn-white py-1.5 px-1 rounded-lg text-[11px] font-black chip-on-sub" data-pool="sub_4d_thousand" data-kind="sub">4けた貸す</button>
+              <button class="pool-chip btn-3d btn-white py-1.5 px-1 rounded-lg text-[11px] font-black" data-pool="sub_up3" data-kind="sub">〜3けた🎲</button>
+              <button class="pool-chip btn-3d btn-white py-1.5 px-1 rounded-lg text-[11px] font-black" data-pool="sub_up4" data-kind="sub">〜4けた🎲</button>
+              <button class="pool-chip btn-3d btn-white py-1.5 px-1 rounded-lg text-[11px] font-black" data-pool="sub_4d_zero" data-kind="sub">0またぎ</button>
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-1.5">
-            <button class="drill-launch btn-3d btn-white py-2 px-2 rounded-xl text-left" data-drill="add_2d">
-              <div class="text-xs font-black text-pink-700">Lv.1 2けた</div>
-              <div class="text-[10px] font-bold text-slate-500">例: 58 ＋ 67</div>
-            </button>
-            <button class="drill-launch btn-3d btn-pink py-2 px-2 rounded-xl text-left" data-drill="add_3d">
-              <div class="text-xs font-black text-white">★ Lv.2 3けた連続</div>
-              <div class="text-[10px] font-bold text-pink-100">例: 298 ＋ 298</div>
-            </button>
-            <button class="drill-launch btn-3d btn-white py-2 px-2 rounded-xl text-left" data-drill="add_4d">
-              <div class="text-xs font-black text-pink-700">Lv.3 4けた</div>
-              <div class="text-[10px] font-bold text-slate-500">例: 2856 ＋ 1479</div>
-            </button>
-            <button class="drill-launch btn-3d btn-purple py-2 px-2 rounded-xl text-left" data-drill="notebook_mix">
-              <div class="text-xs font-black text-white">📓 あさノート再現</div>
-              <div class="text-[10px] font-bold text-purple-100">たし算＆ひき算</div>
-            </button>
+
+          <!-- Addition Multi-Select -->
+          <div class="bg-pink-50/60 rounded-xl p-2 border border-pink-200 space-y-1.5">
+            <div class="text-[11px] font-black text-pink-800 flex items-center justify-between">
+              <span>➕ たし算（タップでON/OFF）</span>
+              <span class="text-[10px] text-pink-600">ひき算と混ぜOK</span>
+            </div>
+            <div class="grid grid-cols-3 gap-1">
+              <button class="pool-chip btn-3d btn-white py-1.5 px-1 rounded-lg text-[11px] font-black" data-pool="add_2d" data-kind="add">2けた</button>
+              <button class="pool-chip btn-3d btn-white py-1.5 px-1 rounded-lg text-[11px] font-black" data-pool="add_3d" data-kind="add">3けた</button>
+              <button class="pool-chip btn-3d btn-white py-1.5 px-1 rounded-lg text-[11px] font-black" data-pool="add_4d" data-kind="add">4けた</button>
+              <button class="pool-chip btn-3d btn-white py-1.5 px-1 rounded-lg text-[11px] font-black" data-pool="add_up2" data-kind="add">〜2けた🎲</button>
+              <button class="pool-chip btn-3d btn-white py-1.5 px-1 rounded-lg text-[11px] font-black" data-pool="add_up3" data-kind="add">〜3けた🎲</button>
+              <button class="pool-chip btn-3d btn-white py-1.5 px-1 rounded-lg text-[11px] font-black" data-pool="add_up4" data-kind="add">〜4けた🎲</button>
+            </div>
           </div>
         </div>
+
+        <!-- Custom Start Button -->
+        <button id="btnStartCustom" class="btn-3d btn-green w-full py-2.5 rounded-2xl text-sm sm:text-base font-black flex items-center justify-center gap-2">
+          <span>🚀</span>
+          <span id="customStartLabel">えらんだ2種類 × 5問 でスタート!!</span>
+        </button>
       </div>
 
       <!-- Pygmalion Left-to-Right 2-Digit Chunk Drill Card -->
@@ -386,8 +443,8 @@
       </div>
     </section>
 
-    <!-- ==================== VIEW 2: 1-SCREEN ZERO-WASTE POWER-GAUGE HISSAN ==================== -->
-    <section id="viewHissan" class="hidden flex-1 min-h-0 flex flex-col gap-1.5 overflow-hidden">
+    <!-- ==================== VIEW 2: 1-SCREEN ERGONOMIC TAIKO POWER-GAUGE HISSAN ==================== -->
+    <section id="viewHissan" class="hidden flex-1 min-h-0 flex flex-col gap-1.5 overflow-hidden pb-3 sm:pb-1">
       <!-- Row 1: Compact Mode Controls Strip -->
       <div class="shrink-0 flex items-center justify-between gap-1.5">
         <button id="btnToggleDirection" class="btn-3d btn-pink px-2.5 py-1 rounded-xl text-[11px] font-black">
@@ -403,17 +460,15 @@
         </div>
       </div>
 
-      <!-- Row 2: BIG Original Equation + Live Answer Bar (慣れたら直書きOK!) -->
+      <!-- Row 2: BIG Original Equation + Live Answer Bar -->
       <div class="shrink-0 bg-gradient-to-r from-indigo-600 to-sky-500 text-white rounded-2xl px-3 py-1.5 shadow-xs">
         <div class="flex items-center justify-between gap-2">
           <div id="btnShowEquationTop" class="text-lg sm:text-2xl font-black tracking-wide">
             5162 − 1852 ＝
           </div>
-          <div id="eqAnswerSlots" class="flex items-center gap-1 text-lg sm:text-2xl font-black">
-            <!-- Filled live as digits are answered -->
-          </div>
+          <div id="eqAnswerSlots" class="flex items-center gap-1 text-lg sm:text-2xl font-black"></div>
         </div>
-        <!-- 10-Second Per-Digit Countdown Bar (shown when Timer ON) -->
+        <!-- 10-Second Per-Digit Countdown Bar -->
         <div id="digitTimerWrap" class="hidden mt-1 flex items-center gap-2">
           <div class="flex-1 h-2 bg-white/25 rounded-full overflow-hidden">
             <div id="digitTimerBar" class="h-full bg-amber-300 transition-all duration-100" style="width: 100%"></div>
@@ -422,59 +477,86 @@
         </div>
       </div>
 
-      <!-- Row 3: Full-width Non-Truncated Coach Banner -->
+      <!-- Row 3 (ABOVE HISSAN for max visibility!): TAIKO RAINBOW SOUL GAUGE + COMBO & 連続正解 -->
+      <div class="shrink-0 bg-slate-900 rounded-2xl px-2.5 py-1.5 border-2 border-slate-700 shadow-sm space-y-1">
+        <div class="flex items-center justify-between gap-2 text-white">
+          <div class="flex items-center gap-1.5">
+            <span class="text-sm sm:text-base">🥁</span>
+            <span id="taikoComboNum" class="text-lg sm:text-xl font-black text-amber-300 leading-none">0</span>
+            <span class="text-[10px] font-black text-amber-200">コンボ</span>
+            <span class="px-1.5 py-0.5 rounded-full bg-pink-500/25 border border-pink-400/60 text-pink-200 text-[10px] font-black">
+              🔥 <span id="problemStreakNum">0</span>問連続
+            </span>
+          </div>
+          <div class="flex items-center gap-1.5 text-[10px] sm:text-xs font-black">
+            <span id="taikoJudgeBadge" class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[10px] font-black">スタートだドン！</span>
+            <span class="hidden sm:inline text-amber-300">良<span id="taikoRyoCount">0</span></span>
+            <span class="hidden sm:inline text-sky-300">可<span id="taikoKaCount">0</span></span>
+            <span id="taikoGoGoTag" class="hidden px-1.5 py-0.5 rounded-md bg-gradient-to-r from-pink-500 to-amber-400 text-white text-[10px] font-black animate-pulse">GO-GO!!</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <div class="relative flex-1 h-4 sm:h-5 bg-slate-800 rounded-lg p-0.5 border border-slate-600 flex gap-[2px]" id="soulGaugeSegs"></div>
+          <span id="soulPctLabel" class="text-[10px] font-black text-amber-300 w-7 text-right">0%</span>
+          <div id="soulOrb" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-700 border-2 border-slate-500 flex items-center justify-center text-[11px] font-black text-slate-300 shrink-0 transition">
+            魂
+          </div>
+        </div>
+        <div id="soulStatusLabel" class="hidden"></div>
+      </div>
+
+      <!-- Row 4: Coach 1-Liner -->
       <div id="coachBanner" class="shrink-0 bg-white border-2 border-slate-200 rounded-xl px-2.5 py-1 flex items-center gap-1.5 shadow-xs">
         <span id="coachIcon" class="text-base shrink-0">⚔️</span>
-        <span id="coachText" class="text-xs sm:text-sm font-black text-slate-800 leading-tight">
-          一の位バトル！
-        </span>
+        <span id="coachText" class="text-xs sm:text-sm font-black text-slate-800 leading-tight">一の位バトル！</span>
       </div>
 
-      <!-- CENTER STAGE: COMPACT (NON-STRETCHED) 5-5-5-5 VERTICAL GAUGE + HISSAN -->
-      <div id="hissanBoardCard" class="fever-ring relative flex-1 min-h-0 bg-white rounded-2xl border-2 border-slate-200 shadow-sm p-1.5 sm:p-2.5 flex flex-col justify-center overflow-hidden">
-        <!-- Cheerful Praise Banner Overlay (briefly pops on clear!) -->
-        <div id="praiseToast" class="hidden absolute inset-x-3 top-2 z-20 bg-gradient-to-r from-amber-300 via-yellow-200 to-pink-200 border-2 border-amber-400 rounded-2xl px-3 py-2 shadow-lg flex items-center justify-center gap-2 pop-in pointer-events-none">
-          <span id="praiseEmoji" class="text-2xl">🌟</span>
-          <span id="praiseText" class="text-sm sm:text-base font-black text-slate-900">天才すぎ!! めちゃくちゃはやいね!!</span>
+      <!-- Row 5: COMPACT HISSAN BOARD + IMMEDIATELY ATTACHED KEYPAD / LEND BUTTONS (Thumb-Friendly!) -->
+      <div id="hissanBoardCard" class="fever-ring relative shrink-0 bg-white rounded-2xl border-2 border-slate-200 shadow-sm p-1.5 sm:p-2 flex flex-col gap-1.5 overflow-hidden">
+        <!-- Cheerful Praise Banner Overlay -->
+        <div id="praiseToast" class="hidden absolute inset-x-3 top-2 z-20 bg-gradient-to-r from-amber-300 via-yellow-200 to-pink-200 border-2 border-amber-400 rounded-2xl px-3 py-1.5 shadow-lg flex items-center justify-center gap-2 pop-in pointer-events-none">
+          <span id="praiseEmoji" class="text-xl">🌟</span>
+          <span id="praiseText" class="text-xs sm:text-sm font-black text-slate-900">天才すぎ!!</span>
         </div>
-        <!-- 5-Column Synchronized Grid: compressed height so bars look crisp & chunky! -->
-        <div id="hissanGrid" class="w-full max-h-[340px] sm:max-h-[360px] flex-1 min-h-0 grid grid-cols-[34px_1fr_1fr_1fr_1fr] sm:grid-cols-[46px_1fr_1fr_1fr_1fr] gap-1 sm:gap-2 items-stretch">
+
+        <!-- 5-Column Synchronized Grid -->
+        <div id="hissanGrid" class="w-full grid grid-cols-[34px_1fr_1fr_1fr_1fr] sm:grid-cols-[46px_1fr_1fr_1fr_1fr] gap-1 sm:gap-2 items-stretch">
           <!-- Rendered dynamically -->
         </div>
-      </div>
 
-      <!-- BOTTOM COMPACT ACTION / KEYPAD AREA -->
-      <div class="shrink-0 space-y-1">
-        <!-- SOS Rescue Button (RTL bottom-up mode) -->
-        <div id="regroupActionWrap" class="hidden">
-          <button id="btnRegroupAction" class="btn-3d btn-red pulse-hero w-full py-2.5 rounded-2xl text-sm sm:text-base font-black flex items-center justify-center gap-2">
-            <span>🦸‍♂️</span>
-            <span id="regroupActionText">千のヒーローから「+10パワー」を分けて助ける!!</span>
-          </button>
-        </div>
+        <!-- IMMEDIATELY UNDER HISSAN ANSWER BOXES: Action Buttons & Keypad! -->
+        <div class="pt-1 border-t border-slate-100 space-y-1.5">
+          <!-- SOS Rescue Button (RTL bottom-up mode) -->
+          <div id="regroupActionWrap" class="hidden">
+            <button id="btnRegroupAction" class="btn-3d btn-red pulse-hero w-full py-2.5 rounded-2xl text-sm sm:text-base font-black flex items-center justify-center gap-2">
+              <span>🦸‍♂️</span>
+              <span id="regroupActionText">千のヒーローから「+10パワー」を分けて助ける!!</span>
+            </button>
+          </div>
 
-        <!-- LTR Top-Down "貸してあげますか？" 2-Choice Bar -->
-        <div id="ltrLendWrap" class="hidden grid grid-cols-2 gap-2">
-          <button id="btnLtrLendYes" class="btn-3d btn-amber py-3 rounded-2xl text-sm sm:text-base font-black">
-            🤝 貸してあげる!! (3→2)
-          </button>
-          <button id="btnLtrLendNo" class="btn-3d btn-blue py-3 rounded-2xl text-sm sm:text-base font-black">
-            ✋ 貸さなくてOK！ (そのまま)
-          </button>
-        </div>
+          <!-- LTR Top-Down "貸してあげますか？" 2-Choice Bar -->
+          <div id="ltrLendWrap" class="hidden grid grid-cols-2 gap-2">
+            <button id="btnLtrLendYes" class="btn-3d btn-amber py-3 rounded-2xl text-sm sm:text-base font-black">
+              🤝 貸してあげる!! (3→2)
+            </button>
+            <button id="btnLtrLendNo" class="btn-3d btn-blue py-3 rounded-2xl text-sm sm:text-base font-black">
+              ✋ 貸さなくてOK！ (そのまま)
+            </button>
+          </div>
 
-        <!-- Compact 2-Row Numeric Keypad (0-9) -->
-        <div id="hissanKeypad" class="grid grid-cols-5 gap-1.5">
-          <button class="h-key btn-3d btn-white py-2 sm:py-2.5 rounded-xl text-xl sm:text-2xl font-black" data-num="1">1</button>
-          <button class="h-key btn-3d btn-white py-2 sm:py-2.5 rounded-xl text-xl sm:text-2xl font-black" data-num="2">2</button>
-          <button class="h-key btn-3d btn-white py-2 sm:py-2.5 rounded-xl text-xl sm:text-2xl font-black" data-num="3">3</button>
-          <button class="h-key btn-3d btn-white py-2 sm:py-2.5 rounded-xl text-xl sm:text-2xl font-black" data-num="4">4</button>
-          <button class="h-key btn-3d btn-white py-2 sm:py-2.5 rounded-xl text-xl sm:text-2xl font-black" data-num="5">5</button>
-          <button class="h-key btn-3d btn-white py-2 sm:py-2.5 rounded-xl text-xl sm:text-2xl font-black" data-num="6">6</button>
-          <button class="h-key btn-3d btn-white py-2 sm:py-2.5 rounded-xl text-xl sm:text-2xl font-black" data-num="7">7</button>
-          <button class="h-key btn-3d btn-white py-2 sm:py-2.5 rounded-xl text-xl sm:text-2xl font-black" data-num="8">8</button>
-          <button class="h-key btn-3d btn-white py-2 sm:py-2.5 rounded-xl text-xl sm:text-2xl font-black" data-num="9">9</button>
-          <button class="h-key btn-3d btn-white py-2 sm:py-2.5 rounded-xl text-xl sm:text-2xl font-black" data-num="0">0</button>
+          <!-- Chunky 2-Row Numeric Keypad (0-9) RIGHT under the answer slots! -->
+          <div id="hissanKeypad" class="grid grid-cols-5 gap-1.5">
+            <button class="h-key btn-3d btn-white py-2.5 sm:py-3 rounded-xl text-xl sm:text-2xl font-black" data-num="1">1</button>
+            <button class="h-key btn-3d btn-white py-2.5 sm:py-3 rounded-xl text-xl sm:text-2xl font-black" data-num="2">2</button>
+            <button class="h-key btn-3d btn-white py-2.5 sm:py-3 rounded-xl text-xl sm:text-2xl font-black" data-num="3">3</button>
+            <button class="h-key btn-3d btn-white py-2.5 sm:py-3 rounded-xl text-xl sm:text-2xl font-black" data-num="4">4</button>
+            <button class="h-key btn-3d btn-white py-2.5 sm:py-3 rounded-xl text-xl sm:text-2xl font-black" data-num="5">5</button>
+            <button class="h-key btn-3d btn-white py-2.5 sm:py-3 rounded-xl text-xl sm:text-2xl font-black" data-num="6">6</button>
+            <button class="h-key btn-3d btn-white py-2.5 sm:py-3 rounded-xl text-xl sm:text-2xl font-black" data-num="7">7</button>
+            <button class="h-key btn-3d btn-white py-2.5 sm:py-3 rounded-xl text-xl sm:text-2xl font-black" data-num="8">8</button>
+            <button class="h-key btn-3d btn-white py-2.5 sm:py-3 rounded-xl text-xl sm:text-2xl font-black" data-num="9">9</button>
+            <button class="h-key btn-3d btn-white py-2.5 sm:py-3 rounded-xl text-xl sm:text-2xl font-black" data-num="0">0</button>
+          </div>
         </div>
       </div>
     </section>
@@ -806,6 +888,30 @@
         this.tone(195, 0.12, 'sawtooth', 0.11, 0);
         this.tone(155, 0.18, 'sawtooth', 0.11, 0.08);
       },
+      taikoDon() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        const o = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(165, t);
+        o.frequency.exponentialRampToValueAtTime(58, t + 0.14);
+        g.gain.setValueAtTime(0.32, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+        o.connect(g); g.connect(this.ctx.destination);
+        o.start(t); o.stop(t + 0.17);
+      },
+      taikoKa() {
+        this.tone(820, 0.045, 'square', 0.12, 0);
+        this.tone(1240, 0.04, 'triangle', 0.12, 0.015);
+      },
+      taikoMilestone() {
+        this.taikoDon();
+        setTimeout(() => this.taikoDon(), 90);
+        setTimeout(() => { this.taikoDon(); this.tone(1046, 0.22, 'triangle', 0.2, 0); }, 180);
+      },
       fanfare() {
         [523, 659, 784, 1046, 784, 1046].forEach((n, i) => this.tone(n, 0.22, 'triangle', 0.2, i * 0.09));
       }
@@ -849,15 +955,84 @@
     // =========================================================================
     function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
+    let customPools = new Set(['sub_2d', 'sub_4d_thousand']);
+    let customCount = 5;
+
+    function generateOneProblem(kind) {
+      if (kind === 'sub_up3') {
+        kind = Math.random() < 0.5 ? 'sub_2d' : 'sub_3d';
+      } else if (kind === 'sub_up4') {
+        const r = Math.random();
+        kind = r < 0.33 ? 'sub_2d' : (r < 0.66 ? 'sub_3d' : 'sub_4d_thousand');
+      } else if (kind === 'add_up2') {
+        if (Math.random() < 0.45) {
+          const a = rand(12, 89), b = rand(4, 9);
+          return { op: '+', a, b };
+        }
+        kind = 'add_2d';
+      } else if (kind === 'add_up3') {
+        kind = Math.random() < 0.5 ? 'add_2d' : 'add_3d';
+      } else if (kind === 'add_up4') {
+        const r = Math.random();
+        kind = r < 0.33 ? 'add_2d' : (r < 0.66 ? 'add_3d' : 'add_4d');
+      }
+
+      if (kind === 'sub_2d') {
+        const t1 = rand(4, 9), u1 = rand(1, 6);
+        const t2 = rand(1, t1 - 2), u2 = rand(u1 + 1, 9);
+        return { op: '-', a: t1 * 10 + u1, b: t2 * 10 + u2 };
+      }
+      if (kind === 'sub_3d') {
+        const h1 = rand(3, 9), t1 = rand(1, 5), u1 = rand(1, 6);
+        const h2 = rand(1, h1 - 2), t2 = rand(t1 + 1, 8), u2 = rand(u1 + 1, 9);
+        return { op: '-', a: h1 * 100 + t1 * 10 + u1, b: h2 * 100 + t2 * 10 + u2 };
+      }
+      if (kind === 'sub_4d_thousand') {
+        const k1 = rand(3, 8), h1 = rand(1, 4), t1 = rand(3, 8), u1 = rand(2, 8);
+        const k2 = rand(1, k1 - 2), h2 = rand(h1 + 2, 9), t2 = rand(1, t1), u2 = Math.random() < 0.5 ? rand(1, u1) : rand(u1 + 1, 9);
+        return { op: '-', a: k1 * 1000 + h1 * 100 + t1 * 10 + u1, b: k2 * 1000 + h2 * 100 + t2 * 10 + u2 };
+      }
+      if (kind === 'sub_4d_zero') {
+        const k1 = rand(3, 8), u1 = rand(1, 5);
+        const k2 = rand(1, k1 - 1), h2 = rand(2, 8), t2 = rand(2, 8), u2 = rand(u1 + 1, 9);
+        const a = Math.random() < 0.5 ? k1 * 1000 : k1 * 1000 + rand(0, 1) * 10 + u1;
+        return { op: '-', a, b: k2 * 1000 + h2 * 100 + t2 * 10 + u2 };
+      }
+      if (kind === 'add_2d') {
+        const t1 = rand(2, 8), u1 = rand(4, 9);
+        const t2 = rand(1, 8), u2 = rand(10 - u1, 9);
+        return { op: '+', a: t1 * 10 + u1, b: t2 * 10 + u2 };
+      }
+      if (kind === 'add_3d') {
+        const h1 = rand(1, 4), t1 = rand(5, 9), u1 = rand(5, 9);
+        const h2 = rand(1, 4), t2 = rand(5, 9), u2 = rand(10 - u1, 9);
+        return { op: '+', a: h1 * 100 + t1 * 10 + u1, b: h2 * 100 + t2 * 10 + u2 };
+      }
+      // add_4d
+      const k1 = rand(1, 4), h1 = rand(5, 9), t1 = rand(4, 9), u1 = rand(5, 9);
+      const k2 = rand(1, 4), h2 = rand(5, 9), t2 = rand(5, 9), u2 = rand(10 - u1, 9);
+      return { op: '+', a: k1 * 1000 + h1 * 100 + t1 * 10 + u1, b: k2 * 1000 + h2 * 100 + t2 * 10 + u2 };
+    }
+
     function buildDrillQueue(drillId) {
+      if (drillId === 'custom') {
+        const kinds = Array.from(customPools);
+        if (kinds.length === 0) kinds.push('sub_2d');
+        const list = [];
+        for (let i = 0; i < customCount; i++) {
+          const pick = kinds[i % kinds.length];
+          list.push(generateOneProblem(pick));
+        }
+        return list.sort(() => Math.random() - 0.5);
+      }
       if (drillId === 'ltr_special') {
         return [
-          { op: '-', a: 51,   b: 28 },   // 5-2=3 -> 貸して2! 11-8=3!
-          { op: '-', a: 5162, b: 1852 }, // 千5-1=4 -> 貸して3! 百11-8=3!
-          { op: '-', a: 5128, b: 1349 }, // 連続「貸してあげますか？」
+          { op: '-', a: 51,   b: 28 },
+          { op: '-', a: 5162, b: 1852 },
+          { op: '-', a: 5128, b: 1349 },
           { op: '-', a: 324,  b: 156 },
-          { op: '+', a: 298,  b: 298 },  // たし算「+1もらう？」
-          { op: '-', a: 5000, b: 1234 }  // 0の連続お助けラスボス！
+          { op: '+', a: 298,  b: 298 },
+          { op: '-', a: 5000, b: 1234 }
         ];
       }
       if (drillId === 'notebook_mix') {
@@ -871,49 +1046,8 @@
           { op: '-', a: 1822, b: 1294 }
         ];
       }
-
       const list = [];
-      const count = 6;
-      for (let i = 0; i < count; i++) {
-        if (drillId === 'sub_2d') {
-          const t1 = rand(4, 9), u1 = rand(1, 6);
-          const t2 = rand(1, t1 - 2), u2 = rand(u1 + 1, 9);
-          list.push({ op: '-', a: t1 * 10 + u1, b: t2 * 10 + u2 });
-        } else if (drillId === 'sub_3d') {
-          const h1 = rand(3, 9), t1 = rand(1, 5), u1 = rand(1, 6);
-          const h2 = rand(1, h1 - 2), t2 = rand(t1 + 1, 8), u2 = rand(u1 + 1, 9);
-          list.push({ op: '-', a: h1 * 100 + t1 * 10 + u1, b: h2 * 100 + t2 * 10 + u2 });
-        } else if (drillId === 'sub_4d_thousand') {
-          if (i === 0) {
-            list.push({ op: '-', a: 5162, b: 1852 });
-          } else {
-            const k1 = rand(3, 8), h1 = rand(1, 4), t1 = rand(3, 8), u1 = rand(2, 8);
-            const k2 = rand(1, k1 - 2), h2 = rand(h1 + 2, 9), t2 = rand(1, t1), u2 = (i % 2 === 0) ? rand(1, u1) : rand(u1 + 1, 9);
-            list.push({ op: '-', a: k1 * 1000 + h1 * 100 + t1 * 10 + u1, b: k2 * 1000 + h2 * 100 + t2 * 10 + u2 });
-          }
-        } else if (drillId === 'sub_4d_zero') {
-          const k1 = rand(3, 8), u1 = rand(1, 5);
-          const k2 = rand(1, k1 - 1), h2 = rand(2, 8), t2 = rand(2, 8), u2 = rand(u1 + 1, 9);
-          const a = (i % 2 === 0) ? k1 * 1000 : k1 * 1000 + rand(0, 1) * 10 + u1;
-          list.push({ op: '-', a, b: k2 * 1000 + h2 * 100 + t2 * 10 + u2 });
-        } else if (drillId === 'add_2d') {
-          const t1 = rand(3, 8), u1 = rand(5, 9);
-          const t2 = rand(2, 8), u2 = rand(10 - u1, 9);
-          list.push({ op: '+', a: t1 * 10 + u1, b: t2 * 10 + u2 });
-        } else if (drillId === 'add_3d') {
-          if (i === 0) {
-            list.push({ op: '+', a: 298, b: 298 });
-          } else {
-            const h1 = rand(1, 4), t1 = rand(5, 9), u1 = rand(5, 9);
-            const h2 = rand(1, 4), t2 = rand(5, 9), u2 = rand(10 - u1, 9);
-            list.push({ op: '+', a: h1 * 100 + t1 * 10 + u1, b: h2 * 100 + t2 * 10 + u2 });
-          }
-        } else {
-          const k1 = rand(1, 4), h1 = rand(5, 9), t1 = rand(4, 9), u1 = rand(5, 9);
-          const k2 = rand(1, 4), h2 = rand(5, 9), t2 = rand(5, 9), u2 = rand(10 - u1, 9);
-          list.push({ op: '+', a: k1 * 1000 + h1 * 100 + t1 * 10 + u1, b: k2 * 1000 + h2 * 100 + t2 * 10 + u2 });
-        }
-      }
+      for (let i = 0; i < customCount; i++) list.push(generateOneProblem(drillId));
       return list;
     }
 
@@ -952,8 +1086,174 @@
       timerEnabled: false,
       timerLeftMs: 10000,
       timerHandle: null,
+      soulPct: 0,
+      ryoCount: 0,
+      kaCount: 0,
+      problemStreak: 0,
+      hadMissThisProblem: false,
+      clearedSoulOnce: false,
+      maxedSoulOnce: false,
       locked: false
     };
+
+    function spawnStreakStamp(bigText, subText, gradientCls = 'from-amber-400 via-pink-500 to-purple-500') {
+      const board = document.getElementById('hissanBoardCard');
+      if (!board) return;
+      const el = document.createElement('div');
+      el.className = `streak-stamp px-5 py-2.5 rounded-3xl bg-gradient-to-r ${gradientCls} text-white border-4 border-white shadow-2xl text-center whitespace-nowrap`;
+      el.innerHTML = `<div class="text-2xl sm:text-3xl font-black drop-shadow">${bigText}</div><div class="text-xs font-black text-yellow-100">${subText}</div>`;
+      board.appendChild(el);
+      setTimeout(() => el.remove(), 950);
+    }
+
+    function updateTaikoUI(judgeType = null, judgeMsg = null) {
+      const comboEl = document.getElementById('taikoComboNum');
+      const judgeEl = document.getElementById('taikoJudgeBadge');
+      const ryoEl = document.getElementById('taikoRyoCount');
+      const kaEl = document.getElementById('taikoKaCount');
+      const gogoEl = document.getElementById('taikoGoGoTag');
+      const segsEl = document.getElementById('soulGaugeSegs');
+      const pctEl = document.getElementById('soulPctLabel');
+      const labelEl = document.getElementById('soulStatusLabel');
+      const orbEl = document.getElementById('soulOrb');
+      if (!segsEl) return;
+
+      if (comboEl) {
+        comboEl.textContent = hState.combo;
+        if (judgeType === 'ryo' || judgeType === 'ka') {
+          comboEl.classList.remove('combo-pop');
+          void comboEl.offsetWidth;
+          comboEl.classList.add('combo-pop');
+        }
+      }
+      if (ryoEl) ryoEl.textContent = hState.ryoCount;
+      if (kaEl) kaEl.textContent = hState.kaCount;
+
+      if (judgeEl && judgeMsg) {
+        judgeEl.textContent = judgeMsg;
+        if (judgeType === 'ryo') {
+          judgeEl.className = 'px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 text-[10px] sm:text-xs font-black combo-pop';
+        } else if (judgeType === 'ka') {
+          judgeEl.className = 'px-2 py-0.5 rounded-full bg-sky-400 text-slate-950 text-[10px] sm:text-xs font-black combo-pop';
+        } else if (judgeType === 'fuka') {
+          judgeEl.className = 'px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] sm:text-xs font-black';
+        } else {
+          judgeEl.className = 'px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[10px] sm:text-xs font-black';
+        }
+      }
+
+      const pct = Math.max(0, Math.min(100, Math.round(hState.soulPct)));
+      const totalSegs = 24;
+      const clearSeg = 18; // 75% Clear line!
+      const filledSegs = Math.round((pct / 100) * totalSegs);
+      const isClear = pct >= 75;
+      const isMax = pct >= 100;
+      const isGoGo = isClear || hState.combo >= 10;
+
+      if (gogoEl) gogoEl.classList.toggle('hidden', !isGoGo);
+      document.body.classList.toggle('fever-mode', isGoGo);
+
+      if (pctEl) pctEl.textContent = `${pct}%`;
+      if (labelEl) {
+        if (isMax) {
+          labelEl.textContent = '🌈 魂MAX!! ゴッドフィーバーだドン!!';
+          labelEl.className = 'text-amber-300';
+        } else if (isClear) {
+          labelEl.textContent = '🔥 ノルマクリア!! 虹色ゴーゴータイム!!';
+          labelEl.className = 'text-pink-300';
+        } else {
+          labelEl.textContent = `🥁 クリアまで あと${75 - pct}%（一発「良」で2倍UP!）`;
+          labelEl.className = 'text-cyan-300';
+        }
+      }
+
+      // Render 24 crisp Taiko gauge segments
+      const rainbowColors = [
+        '#38bdf8','#38bdf8','#22d3ee','#22d3ee','#2dd4bf','#34d399',
+        '#4ade80','#4ade80','#a3e635','#a3e635','#facc15','#facc15',
+        '#fbbf24','#fb923c','#f97316','#f97316','#f43f5e','#ec4899',
+        '#ec4899','#d946ef','#a855f7','#8b5cf6','#38bdf8','#fde047'
+      ];
+      let segHtml = '';
+      for (let i = 0; i < totalSegs; i++) {
+        const isFilled = i < filledSegs;
+        const isClearTick = (i === clearSeg);
+        let segStyle = '';
+        let segCls = 'flex-1 h-full rounded-[3px] transition-all duration-150 ';
+        if (isFilled) {
+          if (isClear) {
+            segCls += 'taiko-rainbow-seg ';
+          } else {
+            segStyle = `background:${rainbowColors[i]}; box-shadow: 0 0 6px ${rainbowColors[i]}88;`;
+          }
+        } else {
+          segCls += (i >= clearSeg ? 'bg-amber-950/60 border border-amber-500/30 ' : 'bg-slate-700/70 ');
+        }
+        const tickBorder = isClearTick ? 'border-l-2 border-l-yellow-300 ' : '';
+        segHtml += `<div class="${segCls}${tickBorder}" style="${segStyle}"></div>`;
+      }
+      segsEl.innerHTML = segHtml;
+
+      // Update iconic 魂 Orb
+      if (orbEl) {
+        if (isMax) {
+          orbEl.className = 'w-8 h-8 sm:w-9 sm:h-9 rounded-full taiko-rainbow-seg border-2 border-white flex items-center justify-center text-xs sm:text-sm font-black text-slate-950 shrink-0 soul-orb-max';
+        } else if (isClear) {
+          orbEl.className = 'w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-amber-300 via-orange-500 to-pink-500 border-2 border-yellow-200 flex items-center justify-center text-xs sm:text-sm font-black text-white shrink-0 soul-orb-max';
+        } else {
+          orbEl.className = 'w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-700 border-2 border-slate-500 flex items-center justify-center text-xs sm:text-sm font-black text-slate-300 shrink-0';
+        }
+      }
+    }
+
+    function addTaikoHit(isRyo, customMsg = null) {
+      // 一発正解 (良!!) = +2 COMBO & +9% Soul Gauge!
+      // ワンクッション正解 (可!) = +1 COMBO & +4.5% Soul Gauge!
+      const comboGain = isRyo ? 2 : 1;
+      const soulGain = isRyo ? 9.5 : 4.8;
+      const prevCombo = hState.combo;
+      hState.combo += comboGain;
+      if (hState.combo > hState.maxCombo) hState.maxCombo = hState.combo;
+      if (isRyo) {
+        hState.ryoCount += 1;
+        SFX.taikoDon();
+      } else {
+        hState.kaCount += 1;
+        SFX.taikoKa();
+      }
+      hState.soulPct = Math.min(100, hState.soulPct + soulGain);
+
+      // Milestone celebrations (every 10 combos, Clear line 75%, Soul MAX 100%)
+      if (Math.floor(hState.combo / 10) > Math.floor(prevCombo / 10)) {
+        SFX.taikoMilestone();
+        showPraise('🥁', `${Math.floor(hState.combo / 10) * 10}コンボ達成!! 絶好調だドン!!`);
+        if (typeof confetti === 'function') confetti({ particleCount: 40, spread: 70, origin: { y: 0.5 } });
+      }
+      if (!hState.clearedSoulOnce && hState.soulPct >= 75) {
+        hState.clearedSoulOnce = true;
+        SFX.taikoMilestone();
+        showPraise('🔥', 'ノルマクリア!! 虹色ゴーゴータイム突入!!');
+        if (typeof confetti === 'function') confetti({ particleCount: 55, spread: 85, origin: { y: 0.65 } });
+      }
+      if (!hState.maxedSoulOnce && hState.soulPct >= 100) {
+        hState.maxedSoulOnce = true;
+        SFX.taikoMilestone();
+        showPraise('🌈', '魂MAX!! レインボーゴッド降臨!!');
+        if (typeof confetti === 'function') confetti({ particleCount: 80, spread: 100, origin: { y: 0.6 } });
+      }
+
+      updateTaikoUI(isRyo ? 'ryo' : 'ka', customMsg || (isRyo ? '🌟 良!! +2コンボ' : '✨ 可! +1コンボ'));
+    }
+
+    function addTaikoMiss() {
+      hState.combo = 0;
+      hState.problemStreak = 0;
+      hState.hadMissThisProblem = true;
+      const psEl = document.getElementById('problemStreakNum');
+      if (psEl) psEl.textContent = '0';
+      hState.soulPct = Math.max(0, hState.soulPct - 6);
+      updateTaikoUI('fuka', '💦 不可... もう1回！');
+    }
 
     const PRAISE_POOL = [
       { emoji: '🌟', text: '天才すぎ!! めちゃくちゃはやいね!!' },
@@ -1050,9 +1350,19 @@
       hState.score = 0;
       hState.combo = 0;
       hState.maxCombo = 0;
+      hState.soulPct = 0;
+      hState.ryoCount = 0;
+      hState.kaCount = 0;
+      hState.problemStreak = 0;
+      hState.hadMissThisProblem = false;
+      hState.clearedSoulOnce = false;
+      hState.maxedSoulOnce = false;
+      const psEl = document.getElementById('problemStreakNum');
+      if (psEl) psEl.textContent = '0';
       updateDirBtnLabel();
       showView('viewHissan');
       loadHissanProblem();
+      updateTaikoUI(null, 'スタートだドン！');
     }
 
     function updateDirBtnLabel() {
@@ -1082,6 +1392,7 @@
       hState.activeCol = (hState.direction === 'ltr') ? hState.minCol : 3;
       hState.ltrSubStep = 'calc';
       hState.ltrTentative = null;
+      hState.hadMissThisProblem = false;
       hState.locked = false;
 
       document.getElementById('btnShowEquationTop').textContent = `${prob.a} ${prob.op === '-' ? '−' : '＋'} ${prob.b} ＝`;
@@ -1130,8 +1441,7 @@
       const needed = ltrNeedsNeighborAdjust(c);
 
       if (userChoseYes === needed) {
-        hState.combo += 1;
-        if (hState.combo > hState.maxCombo) hState.maxCombo = hState.combo;
+        addTaikoHit(false, needed ? '✨ 可! ナイスお助け' : '✨ 可! ナイス判断');
         hState.score += 60;
 
         if (needed) {
@@ -1166,8 +1476,7 @@
         resetDigitTimer();
       } else {
         SFX.wrong();
-        hState.combo = 0;
-        document.body.classList.remove('fever-mode');
+        addTaikoMiss();
         updateDrillProgressHud();
         const card = document.getElementById('hissanBoardCard');
         card.classList.remove('shake-wrong'); void card.offsetWidth; card.classList.add('shake-wrong');
@@ -1313,7 +1622,7 @@
         });
       }
 
-      return `<div class="w-full h-[126px] sm:h-[144px] flex flex-col justify-between gap-0.5 my-0.5">${rowsHtml}</div>`;
+      return `<div class="w-full h-[104px] sm:h-[120px] flex flex-col justify-between gap-0.5 my-0.5">${rowsHtml}</div>`;
     }
 
     /**
@@ -1459,7 +1768,7 @@
         <div class="flex flex-col justify-between items-center py-0.5 text-slate-400">
           <div class="h-5 flex items-center text-[9px] font-black">メモリ</div>
           ${hState.showBlocks ? `
-            <div class="w-full h-[126px] sm:h-[144px] flex flex-col justify-between items-center py-0.5 my-0.5 text-[10px] font-black">
+            <div class="w-full h-[104px] sm:h-[120px] flex flex-col justify-between items-center py-0.5 my-0.5 text-[10px] font-black">
               <div class="flex-1 flex items-center text-amber-500">+10</div>
               <div class="flex-1 flex items-center text-amber-500">+5</div>
               <div class="w-full border-b-2 border-dashed border-amber-400/70"></div>
@@ -1611,12 +1920,11 @@
         }
       }
 
-      // LTR DIRECT LOOK-AHEAD SHORTCUT (慣れたら直書きで一発正解!!)
+      // LTR DIRECT LOOK-AHEAD SHORTCUT (慣れたら直書きで一発正解 -> 良!! +2コンボ!)
       if (hState.direction === 'ltr' && directFinalDigit !== null && num === directFinalDigit) {
-        hState.combo += 1;
-        if (hState.combo > hState.maxCombo) hState.maxCombo = hState.combo;
+        addTaikoHit(true, '🌟 良!! 一発先読み +2');
         const speedBonus = hState.timerEnabled ? Math.round((hState.timerLeftMs / 1000) * 5) : 0;
-        hState.score += 120 + speedBonus;
+        hState.score += 150 + speedBonus;
         hState.ansDigits[c] = directFinalDigit;
 
         if (hState.op === '-') {
@@ -1643,9 +1951,9 @@
       }
 
       if (num === expectedDigit) {
-        hState.combo += 1;
-        if (hState.combo > hState.maxCombo) hState.maxCombo = hState.combo;
-        const pts = (hState.combo >= 5 ? 100 : 50);
+        const isOneShot = (hState.direction === 'ltr') ? (c === 3 || !ltrNeedsNeighborAdjust(c)) : true;
+        addTaikoHit(isOneShot, isOneShot ? '🌟 良!! スパッと正解' : '✨ 可! つぎ貸す？');
+        const pts = (hState.soulPct >= 75 ? 100 : 50);
         hState.score += pts;
 
         if (hState.direction === 'ltr') {
@@ -1692,8 +2000,7 @@
         }
       } else {
         SFX.wrong();
-        hState.combo = 0;
-        document.body.classList.remove('fever-mode');
+        addTaikoMiss();
         updateDrillProgressHud();
         const card = document.getElementById('hissanBoardCard');
         card.classList.remove('shake-wrong');
@@ -1711,8 +2018,19 @@
       SFX.probClear();
       updateDrillProgressHud();
       renderHissanBoard();
+      if (!hState.hadMissThisProblem) {
+        hState.problemStreak += 1;
+      } else {
+        hState.problemStreak = 1;
+      }
+      const psEl = document.getElementById('problemStreakNum');
+      if (psEl) psEl.textContent = hState.problemStreak;
+      const streakMsg = hState.problemStreak >= 2
+        ? `🔥 ${hState.problemStreak}問連続正解!!`
+        : `🎉 ${exactAns} 大正解!!`;
+      const subMsg = hState.problemStreak >= 5 ? '神テンポだドン!!' : hState.problemStreak >= 3 ? 'ポンポン絶好調!!' : 'ナイススピード!!';
+      spawnStreakStamp(streakMsg, subMsg);
       showPraise();
-      floatPopup(`🎉 ${exactAns} 大正解!!`, '#0ea5e9');
       if (typeof confetti === 'function') {
         confetti({ particleCount: hState.combo >= 4 ? 48 : 26, spread: 68, origin: { y: 0.55 } });
       }
@@ -2417,9 +2735,49 @@
       document.getElementById('btnLtrLendYes').addEventListener('click', () => executeLtrDecision(true));
       document.getElementById('btnLtrLendNo').addEventListener('click', () => executeLtrDecision(false));
 
-      document.querySelectorAll('.drill-launch').forEach(btn => {
-        btn.addEventListener('click', () => startHissanDrill(btn.dataset.drill));
+      function refreshCustomStartLabel() {
+        const lbl = document.getElementById('customStartLabel');
+        if (!lbl) return;
+        const n = customPools.size;
+        lbl.textContent = n === 0
+          ? 'まずは1つ以上えらんでね！'
+          : `えらんだ${n}種類 × ${customCount}問 でスタート!!`;
+      }
+
+      document.querySelectorAll('.pool-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          SFX.tap();
+          const pool = chip.dataset.pool;
+          const onCls = chip.dataset.kind === 'add' ? 'chip-on-add' : 'chip-on-sub';
+          if (customPools.has(pool)) {
+            if (customPools.size > 1) {
+              customPools.delete(pool);
+              chip.classList.remove(onCls);
+            } else {
+              floatPopup('1つはえらんだままにしてね！', '#f59e0b');
+            }
+          } else {
+            customPools.add(pool);
+            chip.classList.add(onCls);
+          }
+          refreshCustomStartLabel();
+        });
       });
+
+      document.querySelectorAll('.qcount-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          SFX.tap();
+          customCount = Number(btn.dataset.cnt);
+          document.querySelectorAll('.qcount-btn').forEach(b => b.classList.remove('chip-on-cnt'));
+          btn.classList.add('chip-on-cnt');
+          refreshCustomStartLabel();
+        });
+      });
+
+      document.getElementById('btnStartCustom').addEventListener('click', () => {
+        startHissanDrill('custom', hState.direction);
+      });
+      refreshCustomStartLabel();
 
       document.getElementById('btnSound').addEventListener('click', (e) => {
         SFX.muted = !SFX.muted;
