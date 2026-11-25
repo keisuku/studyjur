@@ -1,1 +1,839 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MATH RUSH!! 見える筆算＆ドパ算数ドリル</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@700;800;900&family=M+PLUS+Rounded+1c:wght@700;800;900&display=swap');
 
+    :root {
+      --bg-page: #f1f5f9;
+      --surface: #ffffff;
+      --ink: #0f172a;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      font-family: 'M PLUS Rounded 1c', 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg-page);
+      color: var(--ink);
+    }
+
+    /* Tactile 3D arcade buttons */
+    .btn-3d {
+      position: relative;
+      transition: transform 0.06s ease, box-shadow 0.06s ease, filter 0.1s ease;
+      cursor: pointer;
+    }
+    .btn-3d:active:not(:disabled) { transform: translateY(3px); }
+    .btn-3d:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-green { background: #22c55e; color: #fff; box-shadow: 0 4px 0 #15803d; }
+    .btn-green:active:not(:disabled) { box-shadow: 0 1px 0 #15803d; }
+
+    .btn-blue { background: #0ea5e9; color: #fff; box-shadow: 0 4px 0 #0369a1; }
+    .btn-blue:active:not(:disabled) { box-shadow: 0 1px 0 #0369a1; }
+
+    .btn-pink { background: #ec4899; color: #fff; box-shadow: 0 4px 0 #be185d; }
+    .btn-pink:active:not(:disabled) { box-shadow: 0 1px 0 #be185d; }
+
+    .btn-amber { background: #f59e0b; color: #fff; box-shadow: 0 4px 0 #b45309; }
+    .btn-amber:active:not(:disabled) { box-shadow: 0 1px 0 #b45309; }
+
+    .btn-red { background: #ef4444; color: #fff; box-shadow: 0 4px 0 #b91c1c; }
+    .btn-red:active:not(:disabled) { box-shadow: 0 1px 0 #b91c1c; }
+
+    .btn-purple { background: #8b5cf6; color: #fff; box-shadow: 0 4px 0 #6d28d9; }
+    .btn-purple:active:not(:disabled) { box-shadow: 0 1px 0 #6d28d9; }
+
+    .btn-white { background: #ffffff; color: #1e293b; border: 2px solid #e2e8f0; box-shadow: 0 3px 0 #cbd5e1; }
+    .btn-white:active:not(:disabled) { box-shadow: 0 1px 0 #cbd5e1; }
+
+    /* Fever overdrive ring */
+    body.fever-mode .fever-ring {
+      animation: feverRing 0.8s linear infinite;
+    }
+    @keyframes feverRing {
+      0% { box-shadow: 0 0 0 3px #ec4899, 0 6px 22px rgba(236, 72, 153, 0.3); }
+      33% { box-shadow: 0 0 0 3px #f59e0b, 0 6px 22px rgba(245, 158, 11, 0.3); }
+      66% { box-shadow: 0 0 0 3px #0ea5e9, 0 6px 22px rgba(14, 165, 233, 0.3); }
+      100% { box-shadow: 0 0 0 3px #ec4899, 0 6px 22px rgba(236, 72, 153, 0.3); }
+    }
+
+    /* Dopagaki Shake & Pop Animations */
+    @keyframes shakeHit {
+      0%, 100% { transform: translate(0, 0); }
+      25% { transform: translate(-4px, 3px); }
+      50% { transform: translate(4px, -3px); }
+      75% { transform: translate(-2px, 1px); }
+    }
+    .shake-hit { animation: shakeHit 0.22s ease-out; }
+
+    @keyframes shakeWrong {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-8px); }
+      40% { transform: translateX(8px); }
+      60% { transform: translateX(-5px); }
+      80% { transform: translateX(5px); }
+    }
+    .shake-wrong { animation: shakeWrong 0.28s ease-out; }
+
+    @keyframes popIn {
+      0% { transform: scale(0.55); opacity: 0; }
+      70% { transform: scale(1.14); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .pop-in { animation: popIn 0.24s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+    @keyframes sosTremble {
+      0%, 100% { transform: translateX(0) rotate(0deg); }
+      25% { transform: translateX(-2px) rotate(-2deg); }
+      75% { transform: translateX(2px) rotate(2deg); }
+    }
+    .sos-tremble { animation: sosTremble 0.35s ease-in-out infinite; }
+
+    @keyframes pulseHero {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.65); }
+      50% { transform: scale(1.03); box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+    }
+    .pulse-hero { animation: pulseHero 0.95s infinite; }
+
+    @keyframes floatScore {
+      0% { transform: translate(-50%, 0) scale(0.75); opacity: 1; }
+      40% { transform: translate(-50%, -26px) scale(1.22); opacity: 1; }
+      100% { transform: translate(-50%, -66px) scale(1); opacity: 0; }
+    }
+    .float-score {
+      position: fixed;
+      z-index: 60;
+      pointer-events: none;
+      font-weight: 900;
+      text-shadow: 0 2px 0 #ffffff, 0 4px 12px rgba(15, 23, 42, 0.22);
+      animation: floatScore 0.78s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Crossed out borrowed digit */
+    .digit-crossed {
+      position: relative;
+      color: #94a3b8 !important;
+    }
+    .digit-crossed::after {
+      content: '';
+      position: absolute;
+      left: 8%;
+      right: 8%;
+      top: 50%;
+      height: 3.5px;
+      background: #ef4444;
+      transform: rotate(-26deg);
+      border-radius: 2px;
+    }
+
+    /* Vertical 5-5-5-5 Gauge Frame Cells */
+    .gauge-cell {
+      border-radius: 4px;
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease, opacity 0.2s ease;
+    }
+    .gauge-empty {
+      background: #e2e8f0;
+      border: 1px solid #cbd5e1;
+    }
+    .gauge-empty-top {
+      background: #fef9c3;
+      border: 1px dashed #eab308;
+      opacity: 0.55;
+    }
+    .gauge-filled-0 { background: #8b5cf6; border: 1px solid #6d28d9; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.18); }
+    .gauge-filled-1 { background: #0ea5e9; border: 1px solid #0369a1; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.18); }
+    .gauge-filled-2 { background: #f59e0b; border: 1px solid #b45309; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.18); }
+    .gauge-filled-3 { background: #ec4899; border: 1px solid #be185d; box-shadow: inset 0 -2px 0 rgba(0,0,0,0.18); }
+
+    /* Borrowed +10 power cells shine gold-bright! */
+    .gauge-lent {
+      background: linear-gradient(180deg, #fde047 0%, #f59e0b 100%);
+      border: 1px solid #b45309;
+      box-shadow: 0 0 6px rgba(245, 158, 11, 0.65);
+      animation: popIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    /* Enemy attack / subtracted cells */
+    .gauge-taken {
+      background: #cbd5e1 !important;
+      border: 1px dashed #94a3b8 !important;
+      box-shadow: none !important;
+      opacity: 0.3;
+      transform: scale(0.82);
+    }
+    /* Dashed outline showing planned subtraction (引く予定の点線枠) */
+    .gauge-sub-cut {
+      border: 2px dashed #ef4444 !important;
+      position: relative;
+      opacity: 0.72;
+    }
+    .gauge-sub-cut::after {
+      content: '−';
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 900;
+      color: #ffffff;
+      text-shadow: 0 1px 2px rgba(185, 28, 28, 0.9);
+    }
+    /* Shortage slot: empty inside, pulsing red dashed border (枠が足りない！) */
+    .gauge-shortage {
+      background: rgba(254, 226, 226, 0.85) !important;
+      border: 2px dashed #ef4444 !important;
+      position: relative;
+      animation: sosTremble 0.45s ease-in-out infinite;
+    }
+    .gauge-shortage::after {
+      content: '!';
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 900;
+      color: #dc2626;
+    }
+    /* Borrowed +10 cells that are subtracted in 減加法 (10 - b) */
+    .gauge-lent-sub {
+      background: rgba(254, 240, 138, 0.45) !important;
+      border: 2px dashed #ef4444 !important;
+      position: relative;
+      opacity: 0.75;
+    }
+    .gauge-lent-sub::after {
+      content: '×';
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 900;
+      color: #dc2626;
+    }
+    #coachText { white-space: normal; overflow-wrap: anywhere; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body class="h-[100dvh] w-screen overflow-hidden flex flex-col">
+
+  <!-- ==================== TOP COMPACT HUD (44px) ==================== -->
+  <header class="shrink-0 h-11 bg-white border-b-2 border-slate-200 px-2.5 flex items-center justify-between gap-2 z-30">
+    <div class="flex items-center gap-1.5">
+      <button id="btnHome" class="btn-3d btn-white px-2 py-1 rounded-xl text-xs font-black flex items-center gap-1">
+        <span>🏠</span>
+        <span class="hidden sm:inline">ホーム</span>
+      </button>
+      <div class="flex items-center gap-1">
+        <span class="text-sm">⚡</span>
+        <span class="text-sm font-black tracking-tight text-slate-800">MATH RUSH!!</span>
+      </div>
+    </div>
+
+    <!-- Progress bar (visible in drills) -->
+    <div id="hudProgressWrap" class="hidden flex-1 max-w-xs mx-1.5 flex items-center gap-1.5">
+      <div class="flex-1 h-3 bg-slate-200 rounded-full overflow-hidden p-0.5">
+        <div id="hudProgressBar" class="h-full rounded-full bg-gradient-to-r from-emerald-400 to-green-500 transition-all duration-300" style="width: 0%"></div>
+      </div>
+      <span id="hudProgressText" class="text-xs font-black text-slate-600 shrink-0">1/7</span>
+    </div>
+
+    <div class="flex items-center gap-1.5">
+      <div id="hudComboPill" class="hidden items-center gap-0.5 bg-orange-50 border-2 border-orange-300 rounded-full px-2 py-0.5 text-xs font-black text-orange-600">
+        <span>🔥</span><span id="hudCombo">0</span>
+      </div>
+      <div class="flex items-center gap-0.5 bg-amber-50 border-2 border-amber-300 rounded-full px-2 py-0.5 text-xs font-black text-amber-700">
+        <span>⭐</span><span id="hudCoins">30</span>
+      </div>
+      <button id="btnBadges" class="btn-3d btn-white px-2 py-1 rounded-xl text-xs font-black" title="バッジ図鑑">
+        🏆 <span id="hudBadgeCount">0/8</span>
+      </button>
+      <button id="btnSound" class="btn-3d btn-white px-2 py-1 rounded-xl text-xs font-black" title="サウンド切替">
+        🔊
+      </button>
+    </div>
+  </header>
+
+  <!-- ==================== MAIN 1-SCREEN STAGE ==================== -->
+  <main class="flex-1 min-h-0 w-full max-w-4xl mx-auto px-2 py-1.5 flex flex-col overflow-hidden">
+
+    <!-- ==================== VIEW 1: COMPACT HOME HUB ==================== -->
+    <section id="viewHub" class="flex-1 min-h-0 flex flex-col gap-2 overflow-y-auto pb-1">
+      <!-- Featured Quick-Launch Banner -->
+      <div class="bg-gradient-to-r from-indigo-600 via-sky-500 to-cyan-500 rounded-2xl p-3 sm:p-4 text-white shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shrink-0">
+        <div>
+          <div class="inline-flex items-center gap-1 bg-white/20 px-2.5 py-0.5 rounded-full text-[11px] font-black mb-1">
+            ⚔️ 5・5・5・5パワーゲージ＆ヒーローお助け筆算!!
+          </div>
+          <h1 class="text-lg sm:text-2xl font-black leading-tight">
+            ピンチを助けて逆転勝利!! 筆算がさらさら解ける！
+          </h1>
+          <p class="text-xs text-sky-100 font-bold mt-0.5">
+            縦の「5・5・5・5メモリ」で+10パワーが一目瞭然！大きい敵に負けないよう左のヒーローからパワーをもらおう！
+          </p>
+        </div>
+        <button id="btnStartNotebookMix" class="btn-3d btn-amber px-4 py-2.5 rounded-2xl text-sm sm:text-base font-black whitespace-nowrap shrink-0">
+          🔥 ノートそっくり特訓 (7問)
+        </button>
+      </div>
+
+      <!-- Focused Hissan Drills -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 shrink-0">
+        <!-- Subtraction Hissan Card -->
+        <div class="bg-white rounded-2xl p-3 border-2 border-sky-200 shadow-sm flex flex-col justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="w-8 h-8 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center text-base font-black">➖</span>
+            <div>
+              <h2 class="text-sm font-black text-slate-800">見える筆算：ひき算（くり下がりバトル）</h2>
+              <p class="text-[11px] font-bold text-slate-500">ピンチの位を左のヒーローが+10パワーで救出！</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-1.5">
+            <button class="drill-launch btn-3d btn-white py-2 px-2 rounded-xl text-left" data-drill="sub_2d">
+              <div class="text-xs font-black text-sky-700">Lv.1 2けた</div>
+              <div class="text-[10px] font-bold text-slate-500">例: 56 − 39</div>
+            </button>
+            <button class="drill-launch btn-3d btn-white py-2 px-2 rounded-xl text-left" data-drill="sub_3d">
+              <div class="text-xs font-black text-sky-700">Lv.2 3けた連続</div>
+              <div class="text-[10px] font-bold text-slate-500">例: 324 − 156</div>
+            </button>
+            <button class="drill-launch btn-3d btn-blue py-2 px-2 rounded-xl text-left" data-drill="sub_4d_thousand">
+              <div class="text-xs font-black text-white">★ Lv.3 千から助ける</div>
+              <div class="text-[10px] font-bold text-sky-100">例: 5162 − 1852</div>
+            </button>
+            <button class="drill-launch btn-3d btn-white py-2 px-2 rounded-xl text-left" data-drill="sub_4d_zero">
+              <div class="text-xs font-black text-purple-700">Lv.4 0をまたぐ</div>
+              <div class="text-[10px] font-bold text-slate-500">例: 5000 − 1234</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Addition Hissan Card -->
+        <div class="bg-white rounded-2xl p-3 border-2 border-pink-200 shadow-sm flex flex-col justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="w-8 h-8 rounded-xl bg-pink-100 text-pink-600 flex items-center justify-center text-base font-black">➕</span>
+            <div>
+              <h2 class="text-sm font-black text-slate-800">見える筆算：たし算（くり上がり合体）</h2>
+              <p class="text-[11px] font-bold text-slate-500">5・5メモリが満タン(10)になったら左へ進化！</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-1.5">
+            <button class="drill-launch btn-3d btn-white py-2 px-2 rounded-xl text-left" data-drill="add_2d">
+              <div class="text-xs font-black text-pink-700">Lv.1 2けた</div>
+              <div class="text-[10px] font-bold text-slate-500">例: 58 ＋ 67</div>
+            </button>
+            <button class="drill-launch btn-3d btn-pink py-2 px-2 rounded-xl text-left" data-drill="add_3d">
+              <div class="text-xs font-black text-white">★ Lv.2 3けた連続</div>
+              <div class="text-[10px] font-bold text-pink-100">例: 298 ＋ 298</div>
+            </button>
+            <button class="drill-launch btn-3d btn-white py-2 px-2 rounded-xl text-left" data-drill="add_4d">
+              <div class="text-xs font-black text-pink-700">Lv.3 4けた</div>
+              <div class="text-[10px] font-bold text-slate-500">例: 2856 ＋ 1479</div>
+            </button>
+            <button class="drill-launch btn-3d btn-purple py-2 px-2 rounded-xl text-left" data-drill="notebook_mix">
+              <div class="text-xs font-black text-white">📓 あさノート再現</div>
+              <div class="text-[10px] font-bold text-purple-100">たし算＆ひき算</div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Extensible World Bar -->
+      <div class="bg-white rounded-2xl p-2.5 border-2 border-slate-200 shadow-sm shrink-0">
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="text-xs font-black text-slate-600">🗺️ 算数ワールド（拡張プラットフォーム）</span>
+          <span class="text-[10px] font-bold text-slate-400">これからも続々追加！</span>
+        </div>
+        <div id="worldBar" class="grid grid-cols-2 sm:grid-cols-4 gap-1.5"></div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 2: 1-SCREEN ZERO-WASTE POWER-GAUGE HISSAN ==================== -->
+    <section id="viewHissan" class="hidden flex-1 min-h-0 flex flex-col gap-1.5 overflow-hidden">
+      <!-- Compact Top Battle Status Strip -->
+      <div id="coachBanner" class="shrink-0 bg-white border-2 border-slate-200 rounded-2xl px-2.5 py-1.5 flex items-center justify-between gap-2 shadow-xs">
+        <div class="flex items-center gap-1.5 min-w-0">
+          <span id="coachIcon" class="text-lg shrink-0">⚔️</span>
+          <span id="coachText" class="text-xs sm:text-sm font-black text-slate-800 truncate">
+            一の位バトル！
+          </span>
+        </div>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <span id="btnShowEquationTop" class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-lg bg-slate-100 text-xs font-black text-slate-600">
+            5162 − 1852
+          </span>
+          <button id="btnToggleBlocks" class="btn-3d btn-white px-2 py-0.5 rounded-lg text-[11px] font-black">
+            📊 ゲージON
+          </button>
+        </div>
+      </div>
+
+      <!-- CENTER STAGE: TIGHT 5-5-5-5 VERTICAL GAUGE + STRENGTH BATTLE + HISSAN -->
+      <div id="hissanBoardCard" class="fever-ring flex-1 min-h-0 bg-white rounded-2xl border-2 border-slate-200 shadow-sm p-1.5 sm:p-2.5 flex flex-col overflow-hidden">
+        <!-- 5-Column Synchronized Grid: [Scale/Op] [千] [百] [十] [一] -->
+        <div id="hissanGrid" class="flex-1 min-h-0 grid grid-cols-[36px_1fr_1fr_1fr_1fr] sm:grid-cols-[48px_1fr_1fr_1fr_1fr] gap-1 sm:gap-2 items-stretch">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- BOTTOM COMPACT ACTION / KEYPAD AREA -->
+      <div class="shrink-0 space-y-1">
+        <!-- SOS Rescue Button (Appears ONLY when active column is losing and needs +10 hero rescue!) -->
+        <div id="regroupActionWrap" class="hidden">
+          <button id="btnRegroupAction" class="btn-3d btn-red pulse-hero w-full py-2.5 rounded-2xl text-sm sm:text-base font-black flex items-center justify-center gap-2">
+            <span>🦸‍♂️</span>
+            <span id="regroupActionText">千のヒーローから「+10パワー」を分けて助ける!!</span>
+          </button>
+        </div>
+
+        <!-- Compact 2-Row Numeric Keypad (0-9) -->
+        <div id="hissanKeypad" class="grid grid-cols-5 gap-1.5">
+          <button class="h-key btn-3d btn-white py-2 sm:py-2.5 rounded-xl text-xl sm:text-2xl font-black" data-num="1">1</button>
+          <button class="h-key btn-3d btn-white py-2 sm:py-2.5 rounded-xl text-xl sm:text-2xl font-black" data-num="2">2</button>
+          <button class="h-key btn-3d btn-white py-2 sm:py-2.5 rounded-xl text-xl sm:text-2xl font-black" data-num="3">3</button>
+          <button class="h-key btn-3d btn-white py-2 sm:py-2.5 rounded-xl text-xl sm:text-2xl font-black" data-num="4">4</button>
+          <button class="h-key btn-3d btn-white py-2 sm:py-2.5 rounded-xl text-xl sm:text-2xl font-black" data-num="5">5</button>
+          <button class="h-key btn-3d btn-white py-2 sm:py-2.5 rounded-xl text-xl sm:text-2xl font-black" data-num="6">6</button>
+          <button class="h-key btn-3d btn-white py-2 sm:py-2.5 rounded-xl text-xl sm:text-2xl font-black" data-num="7">7</button>
+          <button class="h-key btn-3d btn-white py-2 sm:py-2.5 rounded-xl text-xl sm:text-2xl font-black" data-num="8">8</button>
+          <button class="h-key btn-3d btn-white py-2 sm:py-2.5 rounded-xl text-xl sm:text-2xl font-black" data-num="9">9</button>
+          <button class="h-key btn-3d btn-white py-2 sm:py-2.5 rounded-xl text-xl sm:text-2xl font-black" data-num="0">0</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="viewVedic" class="hidden flex-1 min-h-0 flex flex-col gap-2 overflow-hidden">
+      <div class="shrink-0 flex items-center justify-between gap-2 flex-wrap">
+        <div class="inline-flex bg-white p-1 rounded-xl border-2 border-slate-200 gap-1">
+          <button class="vedic-tab px-2 py-1 rounded-lg text-xs font-black bg-sky-500 text-white" data-vtype="teens">11〜19×11〜19</button>
+          <button class="vedic-tab px-2 py-1 rounded-lg text-xs font-black text-slate-600" data-vtype="sameTens">十の位同じ＆和10</button>
+          <button class="vedic-tab px-2 py-1 rounded-lg text-xs font-black text-slate-600" data-vtype="times5">×5ワープ</button>
+        </div>
+        <span id="vedicEqBadge" class="px-3 py-1 rounded-xl bg-indigo-100 text-indigo-800 text-sm font-black"></span>
+      </div>
+      <div class="shrink-0 bg-indigo-50 border-2 border-indigo-200 rounded-2xl px-3 py-1.5 flex items-center justify-between gap-2">
+        <span id="vedicStepText" class="text-xs sm:text-sm font-black text-indigo-900"></span>
+        <span id="vedicStepPill" class="px-2 py-0.5 rounded-full bg-indigo-500 text-white text-[10px] font-black shrink-0"></span>
+      </div>
+      <div id="vedicCanvasWrap" class="fever-ring flex-1 min-h-0 bg-slate-900 rounded-2xl border-2 border-slate-300 overflow-hidden relative">
+        <canvas id="vedicCanvas" class="w-full h-full block"></canvas>
+      </div>
+      <div id="vedicChoices" class="shrink-0 grid grid-cols-2 gap-2"></div>
+    </section>
+    <section id="viewResult" class="hidden flex-1 min-h-0 flex items-center justify-center">
+      <div class="bg-white rounded-3xl border-2 border-slate-200 shadow-lg p-6 max-w-md w-full text-center space-y-4 pop-in">
+        <div id="resRank" class="w-20 h-20 rounded-3xl bg-gradient-to-br from-amber-300 via-pink-500 to-sky-500 text-white text-4xl font-black flex items-center justify-center mx-auto shadow-md"></div>
+        <div><div class="text-xs font-black text-emerald-600 tracking-wider">DRILL CLEAR!!</div><h2 id="resTitle" class="text-2xl font-black text-slate-800 mt-0.5"></h2></div>
+        <div class="grid grid-cols-3 gap-2">
+          <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200"><div class="text-xs font-bold text-slate-500">スコア</div><div id="resScore" class="text-xl font-black text-pink-600"></div></div>
+          <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200"><div class="text-xs font-bold text-slate-500">最大コンボ</div><div id="resCombo" class="text-xl font-black text-amber-600"></div></div>
+          <div class="bg-slate-50 rounded-2xl p-2.5 border border-slate-200"><div class="text-xs font-bold text-slate-500">ゲット⭐</div><div id="resCoins" class="text-xl font-black text-sky-600"></div></div>
+        </div>
+        <div class="flex gap-2 pt-1">
+          <button id="btnRetry" class="btn-3d btn-green flex-1 py-3 rounded-2xl text-sm font-black">🔥 もういっかい！</button>
+          <button id="btnResultHome" class="btn-3d btn-white flex-1 py-3 rounded-2xl text-sm font-black">🏠 ホームへ</button>
+        </div>
+      </div>
+    </section>
+  </main>
+  <div id="modalBadges" class="hidden fixed inset-0 z-50 bg-slate-900/60 flex items-center justify-center p-3" role="dialog" aria-label="きらきらバッジ図鑑">
+    <div class="bg-white rounded-3xl max-w-md w-full p-5 space-y-3 border-2 border-slate-200 shadow-xl max-h-[85vh] overflow-y-auto">
+      <div class="flex items-center justify-between"><div><h3 class="text-lg font-black">🏆 きらきらバッジ図鑑＆ガチャ</h3><p class="text-xs font-bold text-slate-500">スターコイン 50⭐ でバッジをゲット！</p></div>
+      <button id="btnCloseBadges" class="btn-3d btn-white px-3 py-1 rounded-xl text-xs font-black" aria-label="閉じる">✕</button></div>
+      <div class="flex items-center justify-between bg-amber-50 p-3 rounded-2xl border border-amber-200">
+        <div class="text-sm font-black text-amber-800">コイン：<span id="modalCoins">30</span> ⭐</div>
+        <button id="btnRollGacha" class="btn-3d btn-amber px-3.5 py-2 rounded-xl text-xs font-black">🎰 ガチャ (50⭐)</button>
+      </div>
+      <div id="gachaMsg" class="hidden text-center py-2 px-3 rounded-xl bg-pink-50 border border-pink-300 text-xs font-black text-pink-700" aria-live="polite"></div>
+      <div id="badgeGrid" class="grid grid-cols-4 gap-2"></div>
+    </div>
+  </div>
+  <div id="modalWorld" class="hidden fixed inset-0 z-50 bg-slate-900/60 flex items-center justify-center p-3" role="dialog" aria-label="算数ワールドの予告">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 space-y-3 border-2 border-slate-200 shadow-xl">
+      <div class="flex items-center justify-between"><div class="flex items-center gap-2"><span id="mwIcon" class="text-2xl"></span><h3 id="mwTitle" class="text-lg font-black"></h3></div>
+        <button id="btnCloseWorld" class="btn-3d btn-white px-2.5 py-1 rounded-xl text-xs font-black" aria-label="閉じる">✕</button>
+      </div>
+      <p id="mwDesc" class="text-xs font-bold text-slate-600 leading-relaxed"></p>
+      <div class="bg-slate-50 rounded-2xl p-3 border border-slate-200"><div class="text-xs font-black text-sky-700 mb-1">✨ 実装予定のビジュアル筆算</div><ul id="mwFeatures" class="text-xs font-bold text-slate-600 space-y-1 list-disc list-inside"></ul></div>
+      <button id="btnWorldGoHissan" class="btn-3d btn-blue w-full py-2.5 rounded-2xl text-sm font-black">まずは筆算ひき算・たし算であそぶ！</button>
+    </div>
+  </div>
+  <script>
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const rand = (min,max) => Math.floor(Math.random()*(max-min+1))+min;
+  const WORLD_REGISTRY = [
+    {id:'vedic',name:'インド式かけ算',sub:'面積ブロック合体',icon:'🇮🇳',status:'playable'},
+    {id:'mul_hissan',name:'筆算かけ算',icon:'✖️',desc:'2桁×2桁の筆算で「なぜ1つ左にずらすのか」を面積タイルで理解！',features:['一の位・十の位の部分積が面積と連動','くり上がりの小さな数字が光る']},
+    {id:'div_hissan',name:'筆算わり算',icon:'➗',desc:'たてる→かける→ひく→おろすを100・10・1の配分で可視化！',features:['お皿にブロックを配って商が一目でわかる','あまったブロックを下の位へ両替']},
+    {id:'fractions',name:'分数パズル',icon:'🍕',desc:'ピザやチョコバーを重ねて分数を学ぶ！',features:['カット線が増えて通分','帯分数⇔仮分数の変身']}
+  ];
+  const BADGE_CATALOG = [
+    ['b1','🦸','お助けヒーロー','R'],['b2','🚀','くり上がりロケット','R'],
+    ['b3','📓','あさノート王者','SR'],['b4','🇮🇳','インドの賢者','SR'],
+    ['b5','🍰','ごほうびスフレ','R'],['b6','🍣','すしマスター','R'],
+    ['b7','🌈','フィーバーキング','SSR'],['b8','👑','筆算ゴッド','SSR']
+  ];
+  const SFX = {
+    ctx:null,muted:false,
+    tone(f,d=.11,type='triangle',vol=.16,delay=0) {
+      if(this.muted) return;
+      const AC=window.AudioContext||window.webkitAudioContext;
+      if(!AC) return;
+      try {
+        if(!this.ctx) this.ctx=new AC();
+        if(this.ctx.state==='suspended') this.ctx.resume().catch(()=>{});
+        const c=this.ctx,t=c.currentTime+delay,o=c.createOscillator(),g=c.createGain();
+        o.type=type;o.frequency.setValueAtTime(f,t);
+        g.gain.setValueAtTime(.001,t);g.gain.linearRampToValueAtTime(vol,t+.01);g.gain.exponentialRampToValueAtTime(.001,t+d);
+        o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+d+.02);
+      } catch {}
+    },
+    notes(ns,s=.06){ns.forEach((f,i)=>this.tone(f,.16,'triangle',.14,i*s));},
+    tap(){this.tone(540,.05,'sine',.1);},
+    heroRescue(){this.notes([220,523,659,784,1046]);},
+    carry(){this.notes([523,784,1046]);},
+    digitOk(combo){const f=[523,587,659,784,880,1046,1174,1318][Math.min(combo,7)];this.notes([f,f*1.25],.04);},
+    probClear(){this.notes([523,659,784,1046]);},
+    wrong(){this.tone(195,.12,'sawtooth',.11);this.tone(155,.18,'sawtooth',.11,.08);},
+    fanfare(){this.notes([523,659,784,1046,784,1046],.09);}
+  };
+  const SAVE_KEY='math_rush_hissan_v2';
+  let profile={coins:30,badges:[]};
+  try {
+    const p=JSON.parse(localStorage.getItem(SAVE_KEY));
+    if(p&&Number.isSafeInteger(p.coins)&&p.coins>=0&&Array.isArray(p.badges)) profile={coins:p.coins,badges:[...new Set(p.badges)].filter(id=>BADGE_CATALOG.some(b=>b[0]===id))};
+  } catch {}
+  const saveProfile=()=>{try{localStorage.setItem(SAVE_KEY,JSON.stringify(profile));}catch{}};
+  function updateTopHud(){
+    $('hudCoins').textContent=profile.coins;$('modalCoins').textContent=profile.coins;
+    $('hudBadgeCount').textContent=profile.badges.length+'/'+BADGE_CATALOG.length;
+  }
+  function floatPopup(value,color='#16a34a'){
+    const e=document.createElement('div');e.className='float-score text-xl sm:text-3xl';
+    e.style.left='50%';e.style.top='36%';e.style.color=color;e.textContent=value;
+    document.body.appendChild(e);setTimeout(()=>e.remove(),800);
+  }
+  function confettiSafe(n,spread,y){if(typeof window.confetti==='function'&&!matchMedia('(prefers-reduced-motion: reduce)').matches) window.confetti({particleCount:n,spread,origin:{y}});}
+  const notebook=[[5162,1852,'-'],[56,39,'-'],[324,156,'-'],[298,298,'+'],[824,77,'-'],[2164,1139,'-'],[1822,1294,'-']];
+  function buildDrillQueue(id){
+    if(id==='notebook_mix')return notebook.map(([a,b,op])=>({a,b,op}));
+    const list=[];
+    for(let i=0;i<6;i++){
+      const add=id.startsWith('add_');
+      let a,b;
+      if(id==='sub_2d'){
+        const t=rand(4,9),u=rand(1,6);a=10*t+u;b=10*rand(1,t-2)+rand(u+1,9);
+      }else if(id==='sub_3d'){
+        const h=rand(3,9),t=rand(1,5),u=rand(1,6);a=h*100+t*10+u;b=rand(1,h-2)*100+rand(t+1,8)*10+rand(u+1,9);
+      }else if(id==='sub_4d_thousand'){
+        const k=rand(3,8),h=rand(1,4),t=rand(3,8),u=rand(2,8);
+        a=i?k*1000+h*100+t*10+u:5162;b=i?rand(1,k-2)*1000+rand(h+2,9)*100+rand(1,t)*10+(i%2===0?rand(1,u):rand(u+1,9)):1852;
+      }else if(id==='sub_4d_zero'){
+        const k=rand(3,8),u=rand(1,5);a=k*1000+(i%2?rand(0,1)*10+u:0);b=rand(1,k-1)*1000+rand(2,8)*100+rand(2,8)*10+rand(u+1,9);
+      }else{
+        const u=rand(5,9),v=rand(10-u,9);
+        if(id==='add_2d'){a=rand(3,8)*10+u;b=rand(2,8)*10+v;}
+        else if(id==='add_3d'){a=i?rand(1,4)*100+rand(5,9)*10+u:298;b=i?rand(1,4)*100+rand(5,9)*10+v:298;}
+        else{a=rand(1,4)*1000+rand(5,9)*100+rand(4,9)*10+u;b=rand(1,4)*1000+rand(5,9)*100+rand(5,9)*10+v;}
+      }
+      list.push({a,b,op:add?'+':'-'});
+    }
+    return list;
+  }
+  const places=['千','百','十','一'],units=[1000,100,10,1];
+  const tints=['bg-purple-50/80 border-purple-300','bg-sky-50/80 border-sky-300','bg-amber-50/80 border-amber-300','bg-pink-50/80 border-pink-300'];
+  const toDigits4=n=>units.map(u=>Math.floor(n/u)%10);
+  let hState={},vState={},screen,run=0,lastRetryFn=()=>showView('viewHub'),showBlocks=true;
+  function showView(id){
+    screen=id;
+    ['viewHub','viewHissan','viewVedic','viewResult'].forEach(v=>$(v).classList.toggle('hidden',v!==id));
+    const drill=id==='viewHissan'||id==='viewVedic';
+    $('hudProgressWrap').classList.toggle('hidden',!drill);
+    $('hudComboPill').classList.toggle('hidden',!drill);$('hudComboPill').classList.toggle('flex',drill);
+    if(!drill){run++;document.body.classList.remove('fever-mode');}
+  }
+  function setHud(i,total,combo){
+    $('hudProgressBar').style.width=Math.round(i/total*100)+'%';
+    $('hudProgressText').textContent=(i+1)+'/'+total;$('hudCombo').textContent=combo;
+    document.body.classList.toggle('fever-mode',combo>=5);
+  }
+  function startHissanDrill(id){
+    SFX.tap();run++;hState={id,queue:buildDrillQueue(id),i:0,score:0,combo:0,max:0};
+    showView('viewHissan');loadHissanProblem();
+  }
+  function loadHissanProblem(){
+    const {a,b,op}=hState.queue[hState.i];
+    Object.assign(hState,{a,b,op,digits:toDigits4(a),enemy:toDigits4(b),current:toDigits4(a),sent:Array(4).fill(false),received:Array(4).fill(false),carry:Array(4).fill(0),answers:Array(4).fill(null),col:3,locked:false});
+    $('btnShowEquationTop').textContent=a+(op==='-'?' − ':' ＋ ')+b;
+    setHud(hState.i,hState.queue.length,hState.combo);renderHissanBoard();
+  }
+  function getNeededBorrowLender(){
+    const s=hState,c=s.col;
+    if(s.op!=='-'||s.current[c]>=s.enemy[c])return null;
+    for(let from=c-1;from>=0;from--)if(s.current[from]>0)return{from,to:from+1};
+    return null;
+  }
+  function shake(cls){const c=$('hissanBoardCard');c.classList.remove(cls);void c.offsetWidth;c.classList.add(cls);}
+  function executeBorrow(){
+    const s=hState,need=getNeededBorrowLender();
+    if(screen!=='viewHissan'||s.locked||!need)return;
+    const {from,to}=need;s.current[from]--;s.current[to]+=10;s.sent[from]=true;s.received[to]=true;
+    SFX.heroRescue();shake('shake-hit');floatPopup('⚡ '+places[from]+'ヒーローが +10パワー注入!!','#f59e0b');confettiSafe(24,50,.45);
+    renderHissanBoard();
+  }
+  function renderFiveStackHtml(c){
+    const s=hState,active=c===s.col,done=s.answers[c]!==null,b=s.enemy[c];
+    let rows='';
+    for(const frame of [3,2,1,0]){
+      const boost=frame>=2;
+      let cells='';
+      for(let j=0;j<5;j++){
+        const slot=5*frame+j;
+        let cl=boost?'gauge-empty-top':'gauge-empty';
+        if(s.op==='+'){
+          const n=s.digits[c]+s.carry[c]+(active||done?b:0);
+          if(slot<n)cl=boost?'gauge-lent':'gauge-filled-'+c;
+        }else if(s.received[c]&&s.current[c]>=10){
+          if(boost)cl=done&&slot-10<b?'gauge-taken':active&&slot-10<b?'gauge-lent-sub':'gauge-lent';
+          else if(slot<s.current[c]-10)cl='gauge-filled-'+c;
+        }else if(slot<s.current[c]){
+          cl=done&&slot<b?'gauge-taken':'gauge-filled-'+c+(active&&slot<b?' gauge-sub-cut':'');
+        }else if(!boost&&active&&slot<b)cl='gauge-shortage';
+        cells+='<div class="gauge-cell flex-1 h-full '+cl+'"></div>';
+      }
+      rows+='<div class="flex-1 min-h-[14px] w-full flex gap-0.5 p-0.5 rounded-md border '+(boost?'bg-amber-50/70 border-amber-200/80':'bg-slate-100/80 border-slate-200/80')+'">'+cells+'</div>';
+      if(frame===2)rows+='<div class="w-full border-b-2 border-dashed border-amber-400/80 my-0.5"></div>';
+    }
+    return '<div class="flex-1 min-h-0 w-full flex flex-col justify-between gap-0.5">'+rows+'</div>';
+  }
+  function renderHissanBoard(){
+    const s=hState,need=getNeededBorrowLender(),c=s.col,b=s.enemy[c],n=s.current[c],place=places[c]+'の位';
+    $('coachBanner').classList.toggle('bg-red-50',Boolean(need));
+    $('coachBanner').classList.toggle('border-red-400',Boolean(need));
+    $('coachIcon').textContent=need?'🆘':s.op==='+'?'⚡':s.received[c]?'🔥':'⚔️';
+    $('coachText').textContent=need?place+'：'+(b-n)+'個たりない！ '+places[need.from]+'から助けてもらおう！':s.op==='+'?place+'：'+(s.carry[c]?'くり上がり1 ＋ ':'')+n+' ＋ '+b+' ＝ ？':n>=10?place+'：＋10から'+b+'をひいて、もとの'+(n-10)+'をたすと？':place+'：'+n+' − '+b+' ＝ ？';
+    $('regroupActionWrap').classList.toggle('hidden',!need);
+    if(need)$('regroupActionText').textContent=places[need.from]+'から1つ分けて'+places[need.to]+'に＋10！';
+    $('hissanKeypad').classList.toggle('opacity-35',Boolean(need));
+    document.querySelectorAll('.h-key').forEach(k=>k.disabled=Boolean(need)||s.locked);
+    const scale=showBlocks?'<div class="flex-1 flex flex-col justify-around text-[10px] font-black"><span class="text-amber-600">+10</span><span class="text-amber-600">+5</span><span>10</span><span>5</span></div>':'<div class="flex-1"></div>';
+    let html='<div class="flex flex-col items-center py-0.5 text-slate-400"><div class="h-5 text-[9px] font-black">メモリ</div>'+scale+'<div class="h-5"></div><div class="h-8 sm:h-9 flex items-center text-[10px] font-black text-sky-600">味方</div><div class="h-8 sm:h-9 text-2xl font-black text-rose-500">'+(s.op==='-'?'−':'＋')+'</div><div class="w-full h-1 bg-slate-800 rounded-full my-0.5"></div><div class="h-10 sm:h-12 flex items-center text-[10px] font-black text-emerald-600">こたえ</div></div>';
+    for(let k=0;k<4;k++){
+      const active=c===k,lender=need&&need.from===k,done=s.answers[k]!==null;
+      let frame='bg-slate-50/60 border-slate-200/70',pill='bg-slate-100 text-slate-500',label=places[k];
+      if(done){pill='bg-emerald-100 text-emerald-700';label='✨ 撃破!!';}
+      else if(lender){frame='bg-amber-50 border-amber-400 pulse-hero cursor-pointer';pill='bg-amber-400 text-slate-950';label='🦸 たすける！';}
+      else if(active){
+        frame=need?'bg-red-50/80 border-red-400':tints[k];
+        pill=need?'bg-red-500 text-white sos-tremble':s.op==='+'?'bg-pink-500 text-white':'bg-emerald-500 text-white';
+        label=need?'🆘 '+(b-n)+'個たりない!':s.op==='+'?(n+b+s.carry[c]>=10?'🚀 くり上がる!':'⚡ 合体!!'):n>=10?'💪 '+(10-b)+'＋'+(n-10)+'＝？':'💪 '+n+'≧'+b;
+      }
+      const mark=s.op==='-'&&(s.sent[k]||s.received[k]);
+      const memo=mark?s.current[k]:s.carry[k]?'+'+s.carry[k]:'';
+      const zero=s.a<units[k]&&s.b<units[k]&&!s.carry[k];
+      const answer=done?s.answers[k]:active?'?':'';
+      html+='<div data-col="'+k+'" class="hissan-col min-w-0 rounded-2xl p-1 sm:p-1.5 flex flex-col items-center justify-between border-2 '+frame+(zero?' opacity-25':'')+'"><div class="h-5 w-full flex items-center justify-center"><span class="px-1 py-0.5 rounded-full text-[9px] sm:text-[11px] font-black truncate max-w-full '+pill+'">'+label+'</span></div>'+
+       (showBlocks?renderFiveStackHtml(k):'<div class="flex-1"></div>')+
+       '<div class="h-5 flex items-center">'+(memo!==''?'<span class="px-1.5 rounded-md bg-amber-400 text-xs font-black pop-in">'+memo+'</span>':'')+'</div>'+
+       '<div class="h-8 sm:h-9 flex items-center text-3xl font-black '+(mark?'digit-crossed':'')+'">'+(s.a>=units[k]||k===3?s.digits[k]:'')+'</div>'+
+       '<div class="h-8 sm:h-9 flex items-center text-2xl font-black text-slate-600">'+(s.b>=units[k]||k===3?s.enemy[k]:'')+'</div>'+
+       '<div class="w-full h-1 bg-slate-800 rounded-full my-0.5"></div><div class="h-10 sm:h-12 flex items-center"><div class="w-10 h-10 flex justify-center items-center rounded-xl text-2xl font-black '+(done?'bg-emerald-500 text-white pop-in':active?'bg-white border-2 border-sky-500 text-sky-400':'bg-slate-100 border border-dashed border-slate-300')+'">'+answer+'</div></div></div>';
+    }
+    $('hissanGrid').innerHTML=html;
+    if(need)$('hissanGrid').querySelector('[data-col="'+need.from+'"]').onclick=executeBorrow;
+  }
+  function submitHissanDigit(n){
+    const s=hState;
+    if(screen!=='viewHissan'||s.locked||getNeededBorrowLender())return;
+    const c=s.col,sum=s.digits[c]+s.enemy[c]+s.carry[c],expected=s.op==='-'?s.current[c]-s.enemy[c]:sum%10;
+    if(n!==expected){s.combo=0;setHud(s.i,s.queue.length,0);SFX.wrong();shake('shake-wrong');floatPopup('おしい！もう一回！','#ef4444');return;}
+    s.answers[c]=n;s.combo++;s.max=Math.max(s.max,s.combo);
+    const pts=s.combo>=5?100:50;s.score+=pts;
+    if(c>0&&s.op==='+'&&sum>=10){s.carry[c-1]=1;SFX.carry();floatPopup('🚀 '+places[c-1]+'へ ＋1 進化！','#ec4899');}
+    else{SFX.digitOk(s.combo);floatPopup((s.received[c]?'⚔️ 逆転撃破!! ':'✨ ')+'+'+pts);}
+    const exact=s.op==='-'?s.a-s.b:s.a+s.b;
+    const last=exact>=1000?0:exact>=100?1:exact>=10?2:3;
+    if(c>last){s.col--;setHud(s.i,s.queue.length,s.combo);renderHissanBoard();return;}
+    s.locked=true;setHud(s.i,s.queue.length,s.combo);renderHissanBoard();SFX.probClear();floatPopup('🎉 '+exact+' 完全勝利!!','#0ea5e9');
+    if(s.combo>=4||s.i===s.queue.length-1) confettiSafe(40,68,.58);
+    const token=run;
+    setTimeout(()=>{if(token!==run||screen!=='viewHissan')return;if(++s.i>=s.queue.length)finishDrill(s.score,s.max,()=>startHissanDrill(s.id));else loadHissanProblem();},700);
+  }
+  function makeChoices(ans,deltas){
+    const s=new Set([ans]);
+    for(let i=0;i<50&&s.size<4;i++){const n=ans+deltas[rand(0,deltas.length-1)];if(n>0)s.add(n);}
+    for(let i=1;s.size<4;i++)s.add(ans+i);
+    const out=[...s];for(let i=out.length-1;i>0;i--){const j=rand(0,i);[out[i],out[j]]=[out[j],out[i]];}
+    return out;
+  }
+  function genVedic(type){
+    const step=(text,ans,deltas=[1,-1,2,-2,3])=>({text,ans,choices:makeChoices(ans,deltas)});
+    let a,b,steps;
+    if(type==='teens'){
+      a=rand(11,19);b=rand(11,19);
+      const u=a-10,v=b-10,big=(a+v)*10,small=u*v;
+      steps=[step('STEP 1：まず合体！ '+a+' ＋ '+v+' ＝ ？',a+v),step('STEP 2：角っこブロック！ '+u+' × '+v+' ＝ ？',small),step('FINAL：ドッキング！ '+big+' ＋ '+small+' ＝ ？',a*b,[10,-10,2,-2,1,-1])];
+    }else if(type==='sameTens'){
+      const t=rand(1,7),u=rand(1,9),v=10-u,head=t*(t+1),tail=u*v;
+      a=10*t+u;b=10*t+v;
+      steps=[step('STEP 1：1列ふえるよ！ '+t+' × '+(t+1)+' ＝ ？',head),step('STEP 2：一の位どうし！ '+u+' × '+v+' ＝ ？',tail),step('FINAL：くっつけよう！ '+(head*100)+' ＋ '+tail+' ＝ ？',a*b,[100,-100,10,-10,2])];
+    }else{
+      const half=rand(6,36);a=half*2;b=5;
+      steps=[step('STEP 1：半分にカット！ '+a+' ÷ 2 ＝ ？',half),step('FINAL：かさねて×10！ '+half+' × 10 ＝ ？',a*b,[10,-10,20,-20,5])];
+    }
+    return {type,a,b,ans:a*b,steps};
+  }
+  function drawVedicCanvas(phase){
+    const p=vState.prob,canvas=$('vedicCanvas'),rect=canvas.parentElement.getBoundingClientRect();
+    if(!p||rect.width<1||rect.height<1)return;
+    const dpr=Math.min(devicePixelRatio||1,2),scale=Math.min(1,rect.width/270,rect.height/175);
+    canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.height*dpr);
+    const ctx=canvas.getContext('2d');
+    if(!ctx)return;
+    ctx.translate(canvas.width/2,canvas.height/2);ctx.scale(dpr*scale,dpr*scale);
+    const colors=[['#164e63','#38bdf8'],['#831843','#f472b6'],['#78350f','#fbbf24'],['#14532d','#4ade80']];
+    function box(x,y,w,h,n,title,value){
+      const [fill,border]=colors[n];ctx.fillStyle=fill;ctx.strokeStyle=border;ctx.lineWidth=2.5;
+      ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,w,h,10);else ctx.rect(x,y,w,h);ctx.fill();ctx.stroke();
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.font='900 13px sans-serif';ctx.fillStyle='#cbd5e1';ctx.fillText(title,x+w/2,y+h/2-9);
+      ctx.font='900 17px sans-serif';ctx.fillStyle='#fff';ctx.fillText(String(value),x+w/2,y+h/2+11);
+    }
+    function caption(t,y){ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='900 14px sans-serif';ctx.fillStyle='#fde047';ctx.fillText(t,0,y);}
+    if(p.type==='teens'){
+      const u=p.a-10,v=p.b-10;
+      if(phase){
+        box(-110,-50,78,68,0,'10×10',100);box(-27,-50,65,68,1,'10×'+v,v*10);box(43,-50,67,68,2,u+'×10',u*10);
+        caption('合体！ '+(p.a+v)+' × 10 = '+(p.a+v)*10,-67);
+        box(-46,27,92,45,3,u+'×'+v,phase>=2?u*v:'?');
+      }else{
+        box(-86,-56,96,72,0,'10×10',100);box(15,-56,70,72,1,'10×'+v,v*10);
+        box(-86,21,96,45,2,u+'×10',u*10);box(15,21,70,45,3,u+'×'+v,'?');
+      }
+    }else if(p.type==='sameTens'){
+      const u=p.a%10,v=p.b%10,t=p.a-u;
+      box(-92,-55,106,67,0,t+'×'+t,t*t);
+      if(phase){box(19,-55,73,67,2,t+'×10',t*10);caption(u+'＋'+v+'＝10：1列ふえる！',-72);}
+      else{box(19,-55,73,67,1,t+'×'+v,t*v);box(-92,17,106,47,2,t+'×'+u,t*u);}
+      box(19,17,73,47,3,u+'×'+v,phase>=2?u*v:'?');
+    }else{
+      const h=p.a/2;
+      if(phase){box(-64,-59,128,48,0,h+'×5','');box(-64,-6,128,48,1,h+'×5','');caption('たてが10に変身！ '+h+'×10＝'+(phase>=2?p.ans:'?'),62);}
+      else{box(-116,-28,112,56,0,h+'×5','左半分');box(4,-28,112,56,1,h+'×5','右半分');}
+    }
+  }
+  function startVedic(type='teens'){
+    run++;vState={type,i:0,total:6,score:0,combo:0,max:0};
+    document.querySelectorAll('.vedic-tab').forEach(t=>{
+      const on=t.dataset.vtype===type;t.classList.toggle('bg-sky-500',on);t.classList.toggle('text-white',on);t.classList.toggle('text-slate-600',!on);t.setAttribute('aria-pressed',String(on));
+    });
+    showView('viewVedic');loadVedicProblem();
+  }
+  function loadVedicProblem(){
+    const s=vState;s.prob=genVedic(s.type);s.step=0;s.locked=false;
+    $('vedicEqBadge').textContent=s.prob.a+' × '+s.prob.b+' = ?';setHud(s.i,s.total,s.combo);renderVedicStep();
+  }
+  function renderVedicStep(){
+    const s=vState,st=s.prob.steps[s.step],wrap=$('vedicChoices');
+    $('vedicStepText').textContent=st.text;$('vedicStepPill').textContent='STEP '+(s.step+1)+'/'+s.prob.steps.length;
+    drawVedicCanvas(s.step);wrap.replaceChildren();
+    st.choices.forEach((value,i)=>{
+      const button=document.createElement('button');
+      button.className='btn-3d '+['btn-blue','btn-pink','btn-amber','btn-green'][i]+' py-3 sm:py-3.5 rounded-2xl text-xl font-black';
+      button.textContent=value;
+      button.onclick=()=>{
+        if(screen!=='viewVedic'||s.locked)return;
+        if(value!==st.ans){s.combo=0;setHud(s.i,s.total,0);SFX.wrong();floatPopup('おしい！','#ef4444');return;}
+        s.combo++;s.max=Math.max(s.max,s.combo);s.score+=100;setHud(s.i,s.total,s.combo);
+        if(s.step<s.prob.steps.length-1){SFX.digitOk(s.combo);s.step++;floatPopup('+100','#0ea5e9');renderVedicStep();return;}
+        s.locked=true;SFX.probClear();$('vedicEqBadge').textContent=s.prob.a+' × '+s.prob.b+' = '+s.prob.ans;
+        drawVedicCanvas(2);floatPopup('🎉 '+s.prob.ans+'!!');
+        const token=run;
+        setTimeout(()=>{if(token!==run||screen!=='viewVedic')return;if(++s.i>=s.total)finishDrill(s.score,s.max,()=>startVedic(s.type));else loadVedicProblem();},600);
+      };
+      wrap.append(button);
+    });
+  }
+  function finishDrill(score,max,retry){
+    lastRetryFn=retry;SFX.fanfare();
+    const gain=Math.max(20,Math.round(score/35));
+    profile.coins+=gain;if(!profile.badges.length)profile.badges.push('b1');saveProfile();updateTopHud();
+    const rank=score>=1400?'SS':score>=900?'S':score>=500?'A':'B';
+    $('resRank').textContent=rank;$('resTitle').textContent=rank==='SS'?'筆算ゴッド降臨!!':rank==='S'?'さらさらマスター!!':'ナイスチャレンジ!!';
+    $('resScore').textContent=score;$('resCombo').textContent=max;$('resCoins').textContent='+'+gain;
+    showView('viewResult');confettiSafe(85,95,.55);
+  }
+  function renderWorldBar(){
+    for(const w of WORLD_REGISTRY){
+      const b=document.createElement('button'),play=w.status==='playable';
+      b.className='btn-3d '+(play?'btn-purple':'btn-white')+' p-2 rounded-xl text-left flex items-center gap-2';
+      b.innerHTML='<span class="text-xl">'+w.icon+'</span><div class="min-w-0"><div class="text-xs font-black truncate">'+w.name+'</div><div class="text-[10px] font-bold opacity-80 truncate">'+(play?w.sub:'近日公開 🔍')+'</div></div>';
+      b.onclick=()=>{
+        SFX.tap();
+        if(play){startVedic();return;}
+        $('mwIcon').textContent=w.icon;$('mwTitle').textContent=w.name;$('mwDesc').textContent=w.desc;
+        $('mwFeatures').replaceChildren(...w.features.map(x=>{const li=document.createElement('li');li.textContent=x;return li;}));
+        $('modalWorld').classList.remove('hidden');
+      };$('worldBar').append(b);
+    }
+  }
+  function renderBadgeGrid(){
+    updateTopHud();$('badgeGrid').innerHTML=BADGE_CATALOG.map(([id,icon,name])=>{
+      const ok=profile.badges.includes(id);
+      return '<div class="rounded-2xl p-2 text-center border-2 '+(ok?'bg-amber-50 border-amber-300':'bg-slate-50 border-slate-200 opacity-50')+'"><div class="text-2xl">'+(ok?icon:'🔒')+'</div><div class="text-[10px] font-black mt-0.5">'+(ok?name:'？？？')+'</div></div>';
+    }).join('');
+  }
+  function gacha(){
+    const msg=$('gachaMsg'),pool=BADGE_CATALOG.filter(b=>!profile.badges.includes(b[0]));
+    msg.classList.remove('hidden');
+    if(!pool.length){msg.textContent='👑 全バッジコンプリート！';return;}
+    if(profile.coins<50){SFX.wrong();msg.textContent='コインがたりないよ！ドリルで 50⭐ あつめよう！';return;}
+    profile.coins-=50;const [id,icon,name]=pool[rand(0,pool.length-1)];profile.badges.push(id);
+    saveProfile();SFX.fanfare();confettiSafe(60,70,.5);msg.textContent='🎉 大当たり!! '+icon+' '+name+' をゲット！';renderBadgeGrid();
+  }
+  const home=()=>{SFX.tap();showView('viewHub');};
+  $('btnHome').onclick=home;$('btnResultHome').onclick=home;$('btnRetry').onclick=()=>{SFX.tap();lastRetryFn();};
+  $('btnStartNotebookMix').onclick=()=>startHissanDrill('notebook_mix');
+  document.querySelectorAll('.drill-launch').forEach(b=>b.onclick=()=>startHissanDrill(b.dataset.drill));
+  $('btnSound').onclick=e=>{SFX.muted=!SFX.muted;e.currentTarget.textContent=SFX.muted?'🔇':'🔊';if(!SFX.muted)SFX.tap();};
+  $('btnToggleBlocks').onclick=e=>{SFX.tap();showBlocks=!showBlocks;e.currentTarget.textContent=showBlocks?'📊 ゲージON':'📊 ゲージOFF';renderHissanBoard();};
+  $('btnRegroupAction').onclick=executeBorrow;
+  document.querySelectorAll('.h-key').forEach(b=>b.onclick=()=>submitHissanDigit(Number(b.dataset.num)));
+  document.querySelectorAll('.vedic-tab').forEach(b=>b.onclick=()=>{SFX.tap();startVedic(b.dataset.vtype);});
+  $('btnBadges').onclick=()=>{SFX.tap();$('gachaMsg').classList.add('hidden');renderBadgeGrid();$('modalBadges').classList.remove('hidden');};
+  $('btnCloseBadges').onclick=()=>{SFX.tap();$('modalBadges').classList.add('hidden');};
+  $('btnRollGacha').onclick=gacha;
+  $('btnCloseWorld').onclick=()=>{$('modalWorld').classList.add('hidden');SFX.tap();};
+  $('btnWorldGoHissan').onclick=()=>{$('modalWorld').classList.add('hidden');startHissanDrill('notebook_mix');};
+  window.addEventListener('keydown',e=>{
+    if(screen!=='viewHissan'||hState.locked||!$('modalBadges').classList.contains('hidden'))return;
+    if(getNeededBorrowLender()&&(e.key===' '||e.key==='Enter')){e.preventDefault();executeBorrow();}
+    else if(/^[0-9]$/.test(e.key))submitHissanDigit(Number(e.key));
+  });
+  window.addEventListener('resize',()=>{if(screen==='viewVedic')drawVedicCanvas(vState.locked?2:vState.step);});
+  updateTopHud();renderWorldBar();showView('viewHub');
+  </script>
+</body>
+</html>
